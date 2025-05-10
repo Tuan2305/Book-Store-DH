@@ -1,0 +1,55 @@
+<!-- filepath: c:\TUAN\code\python\Book - Store\templates\accounts\login.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- ========================= SECTION CONTENT ========================= -->
+<section class="section-conten padding-y" style="min-height:84vh">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card mx-auto" style="max-width: 480px; margin-top:100px;">
+                    <div class="card-header bg-primary text-white text-center">
+                        <h4 class="mb-0">Đăng Nhập</h4>
+                    </div>
+                    <div class="card-body">
+                        {% include 'includes/alerts.html' %}
+                        <form action="{% url 'login' %}" method="POST">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fa fa-envelope"></i></span>
+                                    </div>
+                                    <input type="email" class="form-control" placeholder="Nhập Email" name="email" id="email" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Mật khẩu</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fa fa-lock"></i></span>
+                                    </div>
+                                    <input type="password" class="form-control" placeholder="Nhập mật khẩu" name="password" id="password" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <a href="{% url 'forgotPassword' %}" class="float-right text-primary">Quên mật khẩu?</a> 
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary btn-block"> Đăng Nhập </button>
+                            </div>
+                        </form>
+                        <div class="text-center mt-4">
+                            <p>Chưa có tài khoản? <a href="{% url 'register' %}" class="text-primary">Đăng ký ngay</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- ========================= SECTION CONTENT END// ========================= -->
+{% endblock %}
