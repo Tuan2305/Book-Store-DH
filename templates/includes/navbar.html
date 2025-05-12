@@ -1,5 +1,16 @@
 {% load static %}
 
+{% comment %} <div class="partner-logo-bar py-2" style="background-color: #eef3fa;">
+    <div class="container">
+        <div class="d-flex justify-content-around align-items-center">
+            <img src="{% static '/images/banner/1.jpg' %}" alt="Freeship" height="30">
+            <img src="{% static '/images/banners/cover.jpg' %}" alt="Đinh Tị Books" height="30">
+            <img src="{% static '/images/banners/vjucover.jpg' %}" alt="MCBooks" height="30">
+           
+        </div>
+    </div>
+</div> {% endcomment %}
+
 <header class="section-header">
 <nav class="navbar p-md-0 navbar-expand-sm navbar-light border-bottom">
 <div class="container">
@@ -47,7 +58,7 @@
       </div>
     </div>  <!-- category-wrap.// -->
   </div> <!-- col.// -->
-  <a href="{% url 'store' %}" class="btn btn-outline-primary">Store</a>
+  {% comment %} <a href="{% url 'store' %}" class="btn btn-outline-primary">Store</a> {% endcomment %}
   <div class="col-lg  col-md-6 col-sm-12 col">
     <form action="{% url 'search' %}" class="search" method='GET'>
       <div class="input-group w-100">
@@ -76,12 +87,12 @@
 <div class="widget-header dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown">
     <small class="title text-muted">Welcome {{user.first_name}}!</small>
-    <div>My Account <i class="fa fa-caret-down"></i></div>
+    <div>My Account <i class="fa-thin fa-user"></i></div>
   </a>
   <div class="dropdown-menu dropdown-menu-right">
     <a href="{% url 'dashboard' %}" class="dropdown-item"><i class="fas fa-tachometer-alt mr-2"></i> Dashboard</a>
-    {% comment %} <a href="{% url 'my_orders' %}" class="dropdown-item"><i class="fas fa-shopping-bag mr-2"></i> My Orders</a> {% endcomment %}
-    {% comment %} <a href="{% url 'edit_profile' %}" class="dropdown-item"><i class="fas fa-user-edit mr-2"></i> Edit Profile</a> {% endcomment %}
+    <a href="{% url 'my_orders' %}" class="dropdown-item"><i class="fas fa-shopping-bag mr-2"></i> My Orders</a>
+    <a href="{% url 'edit_profile' %}" class="dropdown-item"><i class="fas fa-user-edit mr-2"></i> Edit Profile</a>
     {% comment %} <a href="{% url 'change_password' %}" class="dropdown-item"><i class="fas fa-lock mr-2"></i> Change Password</a> {% endcomment %}
     <div class="dropdown-divider"></div>
     <a href="{% url 'logout' %}" class="dropdown-item text-danger"><i class="fas fa-sign-out-alt mr-2"></i> Logout</a>

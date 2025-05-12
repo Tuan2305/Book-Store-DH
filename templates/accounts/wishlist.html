@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Cập nhật thông tin | Book Store{% endblock %}
+{% block title %}Danh sách yêu thích | Book Store{% endblock %}
 
 {% block content %}
 <!-- Breadcrumb -->
@@ -11,13 +11,13 @@
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="{% url 'home' %}">Trang chủ</a></li>
                 <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Tài khoản của tôi</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Cập nhật thông tin</li>
+                <li class="breadcrumb-item active" aria-current="page">Danh sách yêu thích</li>
             </ol>
         </nav>
     </div>
 </div>
 
-<!-- Edit Profile Section -->
+<!-- Wishlist Section -->
 <section class="py-5">
     <div class="container">
         <div class="row">
@@ -42,7 +42,7 @@
                     <a href="{% url 'my_orders' %}" class="list-group-item list-group-item-action">
                         <i class="fas fa-shopping-bag me-2"></i> Đơn hàng của tôi
                     </a>
-                    <a href="{% url 'edit_profile' %}" class="list-group-item list-group-item-action active">
+                    <a href="{% url 'edit_profile' %}" class="list-group-item list-group-item-action">
                         <i class="fas fa-user-edit me-2"></i> Thông tin cá nhân
                     </a>
                     <a href="{% url 'change_password' %}" class="list-group-item list-group-item-action">
@@ -51,7 +51,7 @@
                     <a href="{% url 'address_book' %}" class="list-group-item list-group-item-action">
                         <i class="fas fa-map-marker-alt me-2"></i> Sổ địa chỉ
                     </a>
-                    <a href="{% url 'wishlist' %}" class="list-group-item list-group-item-action">
+                    <a href="{% url 'wishlist' %}" class="list-group-item list-group-item-action active">
                         <i class="fas fa-heart me-2"></i> Danh sách yêu thích
                     </a>
                     <a href="{% url 'logout' %}" class="list-group-item list-group-item-action text-danger">
@@ -64,38 +64,44 @@
             <div class="col-md-9">
                 <div class="card shadow-sm border-0">
                     <div class="card-header bg-white py-3">
-                        <h5 class="mb-0">Cập nhật thông tin cá nhân</h5>
+                        <h5 class="mb-0">Sản phẩm yêu thích</h5>
                     </div>
                     <div class="card-body">
                         {% include 'includes/alerts.html' %}
-                        <form action="{% url 'edit_profile' %}" method="POST">
-                            {% csrf_token %}
-                            <div class="form-row mb-3">
-                                <div class="col-md-6 mb-3">
-                                    <label for="first_name">Họ <span class="text-danger">*</span></label>
-                                    <input type="text" name="first_name" id="first_name" class="form-control" value="{{ user.first_name }}" required>
+                        
+                        <div class="row g-4">
+                            {% if wishlist_items %}
+                                {% for item in wishlist_items %}
+                                <div class="col-md-4">
+                                    <div class="card h-100 product-card">
+                                        <div class="position-relative">
+                                            <img src="{{ item.product.images.url }}" class="card-img-top" alt="{{ item.product.product_name }}">
+                                            <button type="button" class="btn btn-sm btn-danger position-absolute" style="top: 10px; right: 10px;">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                        <div class="card-body">
+                                            <h6 class="card-title text-truncate">{{ item.product.product_name }}</h6>
+                                            <p class="text-primary fw-bold mb-2">{{ item.product.price }} đ</p>
+                                            <div class="d-grid">
+                                                <a href="{% url 'add_cart' item.product.id %}" class="btn btn-outline-primary">
+                                                    <i class="fas fa-shopping-cart me-1"></i> Thêm vào giỏ
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="last_name">Tên <span class="text-danger">*</span></label>
-                                    <input type="text" name="last_name" id="last_name" class="form-control" value="{{ user.last_name }}" required>
+                                {% endfor %}
+                            {% else %}
+                                <div class="col-12 text-center py-5">
+                                    <div class="mb-4">
+                                        <i class="fas fa-heart text-muted" style="font-size: 4rem;"></i>
+                                    </div>
+                                    <h5 class="text-muted mb-4">Danh sách yêu thích của bạn đang trống</h5>
+                                    <a href="{% url 'store' %}" class="btn btn-primary">Tiếp tục mua sắm</a>
                                 </div>
-                            </div>
-                            
-                            <div class="form-row mb-3">
-                                <div class="col-md-6 mb-3">
-                                    <label for="phone_number">Số điện thoại <span class="text-danger">*</span></label>
-                                    <input type="text" name="phone_number" id="phone_number" class="form-control" value="{{ user.phone_number }}" required>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="email">Email <span class="text-danger">*</span></label>
-                                    <input type="email" name="email" id="email" class="form-control" value="{{ user.email }}" required>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group mt-4">
-                                <button type="submit" class="btn btn-primary">Cập nhật thông tin</button>
-                            </div>
-                        </form>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>

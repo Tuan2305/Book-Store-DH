@@ -2,39 +2,138 @@
 {% load static %}
 
 {% block content %}
+<section class="py-4 bg-light">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'store' %}">Sản phẩm</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ single_product.product_name }}</li>
+            </ol>
+        </nav>
+    </div>
+</section>
 
-<section class="section-content padding-y bg">
-	<div class="container">
-		<!-- ============================ COMPONENT 1 ================================= -->
-		<div class="card">
-			<div class="row no-gutters">
-				<aside class="col-md-6">
-					<article class="gallery-wrap">
-						<div class="img-big-wrap">
-							<a href="#"><img src="{{ single_product.images.url }}"></a>
-						</div> <!-- img-big-wrap.// -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Product Image Column -->
+            <div class="col-md-6 mb-4">
+                <div class="card border-0">
+                    <div class="card-body p-0 text-center">
+                        <img src="{{ single_product.images.url }}" alt="{{ single_product.product_name }}" class="img-fluid" style="max-height: 500px; object-fit: contain;">
+                    </div>
+                </div>
+                
+                <!-- Thumbnail navigation if you have multiple images -->
+                <div class="row mt-3">
+                    <div class="col-3">
+                        <div class="thumbnail-nav-item active">
+                            <img src="{{ single_product.images.url }}" alt="" class="img-fluid">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Product Details Column -->
+            <div class="col-md-6">
+                <h1 class="mb-2">{{ single_product.product_name }}</h1>
+                
+                <h2 class="h3 text-primary mb-3">{{ single_product.price }} VND</h2>
+                {% if single_product.old_price %}
+                <del class="text-muted mr-2">{{ single_product.old_price }} đ</del>
+                {% endif %}
+                
+                <p class="mb-4">{{ single_product.description }}</p>
+                
+                <form action="{% url 'add_cart' single_product.id %}" method="POST">
+                    {% csrf_token %}
+                    
+                    <!-- Product Variations if applicable -->
+                    {% if single_product.variation_set.all %}
+                    <div class="mb-3">
+                        <h5 class="mb-2">Tùy chọn sản phẩm</h5>
+                        {% for variation_category in variation_categories %}
+                        <div class="form-group">
+                            <label for="{{ variation_category }}">{{ variation_category|capfirst }}:</label>
+                            <select name="{{ variation_category }}" class="form-control" id="{{ variation_category }}">
+                                <option value="">Chọn {{ variation_category }}</option>
+                                {% for variation in single_product.variation_set.all %}
+                                {% if variation.variation_category == variation_category %}
+                                <option value="{{ variation.variation_value }}">{{ variation.variation_value }}</option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Quantity and Add to Cart -->
+<div class="row align-items-center mb-4">
+    <div class="col-md-4">
+        <div class="input-group quantity-control border rounded">
+            <div class="input-group-prepend">
+                <button type="button" class="btn btn-outline-secondary quantity-btn" id="decrease-btn">-</button>
+            </div>
+            <input type="text" name="quantity" id="quantity" class="form-control text-center border-0" value="1" readonly>
+            <div class="input-group-append">
+                <button type="button" class="btn btn-outline-secondary quantity-btn" id="increase-btn">+</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <button type="submit" class="btn btn-primary btn-lg">
+            <i class="fas fa-shopping-cart mr-2"></i> Thêm vào giỏ
+        </button>
+    </div>
+</div>
+                
+                <!-- Product Meta Information -->
+                <div class="product-meta mt-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="{% static 'images/icons/check-icon.png' %}" alt="check" width="24" class="mr-2">
+                        <span>Sản phẩm 100% chính hãng</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="{% static 'images/icons/support-icon.png' %}" alt="support" width="24" class="mr-2">
+                        <span>Tư vấn mua sách trong giờ hành chính</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="{% static 'images/icons/shipping-icon.png' %}" alt="shipping" width="24" class="mr-2">
+                        <span>Miễn phí vận chuyển cho đơn hàng từ 250,000đ</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <img src="{% static 'images/icons/phone-icon.png' %}" alt="hotline" width="24" class="mr-2">
+                        <span>Hotline: 1900 6401</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Product Description -->
+        </section>
 
-					</article> <!-- gallery-wrap .end// -->
-				</aside>
-				<main class="col-md-6 border-left">
-					<form action="{% url 'add_cart' single_product.id %}" method="POST">
-						{% csrf_token %}
-						<article class="content-body">
-							<h2 class="title">{{ single_product.product_name }}</h2>
-							<div class="mb-3">
-								<var class="price h4">{{single_product.price}} VND</var>
-							</div>
-							<p>{{ single_product.description }}</p>
-							{% if single_product.stock <= 0 %}
-								<h5 class="text-danger">Out of Stock</h5>
-							{% else %}
-								<a href="{% url 'add_cart' single_product.id %}" class="btn  btn-primary"> <span class="text">Add to Cart</span> <i class="fas fa-shopping-cart"></i>  </a>
-							{% endif %}
-						</article> <!-- product-info-aside .// -->
-					</form>
-				</main> <!-- col.// -->
-			</div> <!-- row.// -->
-		</div> <!-- card.// -->
-		<!-- ============================ COMPONENT 1 END .// ================================= -->
+    </div>
+</section>
 
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Increase quantity when + button is clicked
+        $('#increase-btn').click(function() {
+            let currentValue = parseInt($('#quantity').val());
+            $('#quantity').val(currentValue + 1);
+        });
+        
+        // Decrease quantity when - button is clicked (minimum value is 1)
+        $('#decrease-btn').click(function() {
+            let currentValue = parseInt($('#quantity').val());
+            if (currentValue > 1) {
+                $('#quantity').val(currentValue - 1);
+            }
+        });
+    });
+</script>
+{% endblock %}
 {% endblock %}

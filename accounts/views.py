@@ -208,3 +208,86 @@ def resetPassword(request):
             return redirect('resetPassword')
     else:
         return render(request, 'accounts/resetPassword.html')
+@login_required(login_url='login')
+def edit_profile(request):
+    if request.method == 'POST':
+        first_name = request.POST['first_name']
+        last_name = request.POST['last_name']
+        phone_number = request.POST['phone_number']
+        email = request.POST['email']
+        
+        # Lấy user hiện tại
+        user = request.user
+        
+        # Cập nhật thông tin
+        user.first_name = first_name
+        user.last_name = last_name
+        user.phone_number = phone_number
+        user.email = email
+        user.save()
+        
+        messages.success(request, 'Thông tin tài khoản đã được cập nhật thành công!')
+        return redirect('edit_profile')
+    
+    return render(request, 'accounts/edit_profile.html')
+
+@login_required(login_url='login')
+def change_password(request):
+    if request.method == 'POST':
+        current_password = request.POST['current_password']
+        new_password = request.POST['new_password']
+        confirm_password = request.POST['confirm_password']
+        
+        user = request.user
+        
+        if new_password == confirm_password:
+            # Kiểm tra mật khẩu hiện tại
+            success = user.check_password(current_password)
+            if success:
+                user.set_password(new_password)
+                user.save()
+                # Cập nhật lại session sau khi đổi mật khẩu
+                auth.login(request, user)
+                messages.success(request, 'Mật khẩu đã được thay đổi thành công!')
+                return redirect('change_password')
+            else:
+                messages.error(request, 'Mật khẩu hiện tại không chính xác')
+                return redirect('change_password')
+        else:
+            messages.error(request, 'Mật khẩu mới không khớp!')
+            return redirect('change_password')
+    
+    return render(request, 'accounts/change_password.html')
+
+@login_required(login_url='login')
+def my_orders(request):
+    # Import Order model nếu chưa import
+    from orders.models import Order
+    
+    orders = Order.objects.filter(user=request.user, is_ordered=True).order_by('-created_at')
+    context = {
+        'orders': orders,
+    }
+    return render(request, 'accounts/my_orders.html', context)
+
+@login_required(login_url='login')
+def order_detail(request, order_number):
+    # Import các model cần thiết
+    from orders.models import Order, OrderProduct
+    
+    order_detail = OrderProduct.objects.filter(order__order_number=order_number, order__user=request.user)
+    order = Order.objects.get(order_number=order_number, user=request.user)
+    
+    context = {
+        'order_detail': order_detail,
+        'order': order,
+    }
+    return render(request, 'accounts/order_detail.html', context)
+
+@login_required(login_url='login')
+def address_book(request):
+    return render(request, 'accounts/address_book.html')
+
+@login_required(login_url='login')
+def wishlist(request):
+    return render(request, 'accounts/wishlist.html')

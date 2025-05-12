@@ -1,0 +1,23 @@
+/* Thêm CSS cho chỉ báo vuốt */
+.swipe-indicator {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.5);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    opacity: 0.7;
+    z-index: 10;
+}
+
+/* Tăng vùng có thể vuốt */
+.touch-carousel {
+    cursor: grab;
+}
+.touch-carousel:active {
+    cursor: grabbing;
+}
+

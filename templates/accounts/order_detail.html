@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Chi tiết đơn hàng | Book Store{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<div class="bg-light py-3">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Tài khoản của tôi</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'my_orders' %}">Đơn hàng của tôi</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ order.order_number }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<!-- Order Detail Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 mb-4 mb-md-0">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body text-center py-4">
+                        <div class="mb-3">
+                            <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px; font-size: 2rem;">
+                                {{ user.first_name|first }}{{ user.last_name|first }}
+                            </div>
+                        </div>
+                        <h5 class="mb-1">{{ user.first_name }} {{ user.last_name }}</h5>
+                        <p class="text-muted small mb-3">{{ user.email }}</p>
+                    </div>
+                </div>
+                
+                <div class="list-group shadow-sm">
+                    <a href="{% url 'dashboard' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-tachometer-alt me-2"></i> Bảng điều khiển
+                    </a>
+                    <a href="{% url 'my_orders' %}" class="list-group-item list-group-item-action active">
+                        <i class="fas fa-shopping-bag me-2"></i> Đơn hàng của tôi
+                    </a>
+                    <a href="{% url 'edit_profile' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-user-edit me-2"></i> Thông tin cá nhân
+                    </a>
+                    <a href="{% url 'change_password' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-lock me-2"></i> Đổi mật khẩu
+                    </a>
+                    <a href="{% url 'address_book' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-map-marker-alt me-2"></i> Sổ địa chỉ
+                    </a>
+                    <a href="{% url 'wishlist' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-heart me-2"></i> Danh sách yêu thích
+                    </a>
+                    <a href="{% url 'logout' %}" class="list-group-item list-group-item-action text-danger">
+                        <i class="fas fa-sign-out-alt me-2"></i> Đăng xuất
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-9">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Chi tiết đơn hàng #{{ order.order_number }}</h5>
+                            <span class="badge 
+                                {% if order.status == 'New' %}bg-info
+                                {% elif order.status == 'Accepted' %}bg-primary
+                                {% elif order.status == 'Completed' %}bg-success
+                                {% elif order.status == 'Cancelled' %}bg-danger
+                                {% else %}bg-secondary
+                                {% endif %}">
+                                {% if order.status == 'New' %}Mới
+                                {% elif order.status == 'Accepted' %}Đã xác nhận
+                                {% elif order.status == 'Completed' %}Hoàn thành
+                                {% elif order.status == 'Cancelled' %}Đã hủy
+                                {% else %}{{ order.status }}
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h6 class="mb-2">Thông tin đơn hàng</h6>
+                                <p class="mb-1">Ngày đặt: {{ order.created_at|date:"d/m/Y H:i" }}</p>
+                                <p class="mb-1">Tổng tiền: {{ order.order_total|floatformat:0 }} đ</p>
+                                <p class="mb-1">Phương thức thanh toán: {{ order.payment.payment_method }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="mb-2">Thông tin giao hàng</h6>
+                                <p class="mb-1">{{ order.full_name }}</p>
+                                <p class="mb-1">Email: {{ order.email }}</p>
+                                <p class="mb-1">Điện thoại: {{ order.phone }}</p>
+                                <p class="mb-1">Tầng: {{ order.floor }}</p>
+                                <p class="mb-1">Phòng: {{ order.room }}</p>
+                                {% if order.order_note %}
+                                <p class="mb-1">Ghi chú: {{ order.order_note }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <h6 class="border-bottom pb-2 mb-3">Sản phẩm đã đặt</h6>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Sản phẩm</th>
+                                        <th>Đơn giá</th>
+                                        <th>Số lượng</th>
+                                        <th class="text-end">Thành tiền</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in order_detail %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="{{ item.product.images.url }}" alt="{{ item.product.product_name }}" class="img-fluid" style="width: 50px; height: 50px; object-fit: cover;">
+                                                <div class="ms-3">
+                                                    <h6 class="mb-0">{{ item.product.product_name }}</h6>
+                                                    {% if item.variations.all %}
+                                                    <small class="text-muted">
+                                                        {% for variation in item.variations.all %}
+                                                        {{ variation.variation_category }}: {{ variation.variation_value }}{% if not forloop.last %}, {% endif %}
+                                                        {% endfor %}
+                                                    </small>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>{{ item.product_price|floatformat:0 }} đ</td>
+                                        <td>{{ item.quantity }}</td>
+                                        <td class="text-end">{{ item.product_price|floatformat:0|multiply:item.quantity }} đ</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot class="table-group-divider">
+                                    <tr>
+                                        <td colspan="3" class="text-end fw-bold">Tổng tiền:</td>
+                                        <td class="text-end fw-bold">{{ order.order_total|floatformat:0 }} đ</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-end">
+                    <a href="{% url 'my_orders' %}" class="btn btn-secondary">Quay lại</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

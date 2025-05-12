@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="py-4 bg-light">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'store' %}">Sản phẩm</a></li>
+                <li class="breadcrumb-item"><a href="{{ product.get_url }}">{{ product.product_name }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Đánh giá sản phẩm</li>
+            </ol>
+        </nav>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white">
+                        <h4 class="mb-0">Đánh giá sản phẩm: {{ product.product_name }}</h4>
+                    </div>
+                    <div class="card-body">
+                        <form action="{% url 'submit_review' product.id %}" method="POST">
+                            {% csrf_token %}
+                            
+                            <div class="form-group text-center">
+                                <label class="mb-3">Đánh giá của bạn</label>
+                                <div class="rate">
+                                    <input type="radio" id="star5" name="rating" value="5" />
+                                    <label for="star5" title="5 sao">5 stars</label>
+                                    <input type="radio" id="star4" name="rating" value="4" />
+                                    <label for="star4" title="4 sao">4 stars</label>
+                                    <input type="radio" id="star3" name="rating" value="3" />
+                                    <label for="star3" title="3 sao">3 stars</label>
+                                    <input type="radio" id="star2" name="rating" value="2" />
+                                    <label for="star2" title="2 sao">2 stars</label>
+                                    <input type="radio" id="star1" name="rating" value="1" />
+                                    <label for="star1" title="1 sao">1 star</label>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="subject">Tiêu đề</label>
+                                <input type="text" class="form-control" id="subject" name="subject" placeholder="Nhập tiêu đề của đánh giá">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="review">Nội dung đánh giá</label>
+                                <textarea class="form-control" id="review" name="review" rows="5" placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm"></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary">Gửi đánh giá</button>
+                                <a href="{{ product.get_url }}" class="btn btn-outline-secondary ml-2">Hủy</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+/* Rating Star Widgets Style */
+.rate {
+    display: inline-block;
+    border: 0;
+}
+.rate > input {
+    display: none;
+}
+.rate > label {
+    float: right;
+    color: #ddd;
+    font-size: 30px;
+}
+.rate > label:before {
+    display: inline-block;
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    content: "\f005"; /* full star */
+    padding: 0 5px;
+}
+.rate > input:checked ~ label,
+.rate > input:hover ~ label {
+    color: #f8ce0b;
+}
+</style>
+{% endblock %}

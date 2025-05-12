@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Sổ địa chỉ | Book Store{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<div class="bg-light py-3">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Tài khoản của tôi</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Sổ địa chỉ</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<!-- Address Book Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 mb-4 mb-md-0">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body text-center py-4">
+                        <div class="mb-3">
+                            <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px; font-size: 2rem;">
+                                {{ user.first_name|first }}{{ user.last_name|first }}
+                            </div>
+                        </div>
+                        <h5 class="mb-1">{{ user.first_name }} {{ user.last_name }}</h5>
+                        <p class="text-muted small mb-3">{{ user.email }}</p>
+                    </div>
+                </div>
+                
+                <div class="list-group shadow-sm">
+                    <a href="{% url 'dashboard' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-tachometer-alt me-2"></i> Bảng điều khiển
+                    </a>
+                    <a href="{% url 'my_orders' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-shopping-bag me-2"></i> Đơn hàng của tôi
+                    </a>
+                    <a href="{% url 'edit_profile' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-user-edit me-2"></i> Thông tin cá nhân
+                    </a>
+                    <a href="{% url 'change_password' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-lock me-2"></i> Đổi mật khẩu
+                    </a>
+                    <a href="{% url 'address_book' %}" class="list-group-item list-group-item-action active">
+                        <i class="fas fa-map-marker-alt me-2"></i> Sổ địa chỉ
+                    </a>
+                    <a href="{% url 'wishlist' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-heart me-2"></i> Danh sách yêu thích
+                    </a>
+                    <a href="{% url 'logout' %}" class="list-group-item list-group-item-action text-danger">
+                        <i class="fas fa-sign-out-alt me-2"></i> Đăng xuất
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-9">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Sổ địa chỉ</h5>
+                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addAddressModal">
+                            <i class="fas fa-plus me-1"></i> Thêm địa chỉ mới
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        {% include 'includes/alerts.html' %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <h6 class="card-title mb-0">Địa chỉ nhà riêng</h6>
+                                            <div>
+                                                <button class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-edit"></i></button>
+                                                <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                                            </div>
+                                        </div>
+                                        <p class="card-text mb-1">Tầng 4, phòng 410</p>
+                                        <p class="card-text mb-1">Mặc định</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <h6 class="card-title mb-0">Địa chỉ cơ quan</h6>
+                                            <div>
+                                                <button class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-edit"></i></button>
+                                                <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                                            </div>
+                                        </div>
+                                        <p class="card-text mb-1">Tầng 5, phòng 506</p>
+                                        <button class="btn btn-sm btn-outline-secondary mt-2">Đặt làm mặc định</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Address Modal -->
+    <div class="modal fade" id="addAddressModal" tabindex="-1" aria-labelledby="addAddressModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addAddressModalLabel">Thêm địa chỉ mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addAddressForm">
+                        <div class="mb-3">
+                            <label for="addressTitle" class="form-label">Tiêu đề địa chỉ</label>
+                            <input type="text" class="form-control" id="addressTitle" placeholder="Ví dụ: Nhà riêng, Công ty, ...">
+                        </div>
+                        <div class="mb-3">
+                            <label for="floor" class="form-label">Tầng</label>
+                            <select class="form-select" id="floor">
+                                <option value="">Chọn tầng</option>
+                                <option value="4">Tầng 4</option>
+                                <option value="5">Tầng 5</option>
+                                <option value="6">Tầng 6</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="room" class="form-label">Phòng</label>
+                            <input type="text" class="form-control" id="room" placeholder="Nhập số phòng">
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="defaultAddress">
+                            <label class="form-check-label" for="defaultAddress">
+                                Đặt làm địa chỉ mặc định
+                            </label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary">Lưu địa chỉ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

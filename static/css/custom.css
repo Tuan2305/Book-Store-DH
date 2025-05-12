@@ -1,0 +1,397 @@
+/* custom.css */
+
+body {
+    background-color: #f4f4f4; /* Màu nền xám nhạt giống Fahasa */
+}
+.rounded-lg {
+    border-radius: 8px !important;
+}
+
+/* Main Carousel Fahasa Style */
+#carouselExampleIndicators .carousel-inner img { /* Target carousel chính */
+    object-fit: cover;
+    /* Cân nhắc đặt max-height nếu ảnh quá cao */
+    /* max-height: 450px; */
+}
+
+/* Side Banners Fahasa Style */
+.section-main-banner-fahasa .col-lg-4 img {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    width: 100%;
+    /* Cố gắng đặt tỷ lệ khung hình cho banner phụ */
+    aspect-ratio: 16 / 9; /* Hoặc tỷ lệ phù hợp với ảnh banner phụ của Fahasa */
+    object-fit: cover; /* Hoặc contain tùy ảnh */
+}
+
+/* Promotion Blocks Fahasa Style */
+.promo-card-fahasa {
+    border: 1px solid #e0e0e0;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+}
+.promo-card-fahasa:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.promo-card-fahasa a {
+    text-decoration: none;
+    color: inherit;
+    display: block; /* Để cả card là link */
+}
+.promo-card-fahasa .card-img-top {
+    width: 100%;
+    /* Điều chỉnh tỷ lệ này cho phù hợp với ảnh của bạn */
+    /* Ảnh của Fahasa cho các khối này thường có chiều cao lớn hơn chiều rộng một chút */
+    aspect-ratio: 3 / 4; /* Thử nghiệm tỷ lệ này */
+    object-fit: cover; /* Quan trọng: cover để lấp đầy, contain để hiển thị toàn bộ ảnh */
+    padding: 0; /* Bỏ padding mặc định nếu có */
+}
+.promo-card-fahasa-footer {
+    border-bottom-left-radius: 7px;
+    border-bottom-right-radius: 7px;
+}
+.promo-card-fahasa-footer .card-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* Icon Quick Links (Nếu bạn quyết định sử dụng) */
+.icon-wrapper-fahasa {
+    width: 60px;
+    height: 60px;
+    border-radius: 10px;
+    background-color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.5rem auto;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden; /* Để ảnh không tràn ra ngoài */
+}
+.icon-wrapper-fahasa img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: cover;
+}
+
+/* Product Listing */
+.card-product-grid-fahasa {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.card-product-grid-fahasa:hover {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transform: translateY(-3px);
+}
+
+.card-product-grid-fahasa .img-wrap {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    overflow: hidden;
+    background-color: white;
+}
+
+.card-product-grid-fahasa .product-image {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+    transition: transform 0.3s;
+}
+
+.card-product-grid-fahasa:hover .product-image {
+    transform: scale(1.05);
+}
+
+.card-product-grid-fahasa .info-wrap {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    background-color: #f9f9f9;
+}
+
+.card-product-grid-fahasa .title {
+    color: #333;
+    font-weight: 500;
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    height: 40px;
+    text-decoration: none;
+}
+
+.card-product-grid-fahasa .price-new-bold {
+    font-weight: bold;
+    color: #ed1c24;
+    font-size: 16px;
+}
+
+.card-product-grid-fahasa .price-old {
+    color: #999;
+    font-size: 14px;
+    text-decoration: line-through;
+}
+
+/* Responsive adjustments */
+@media (max-width: 991.98px) {
+    .section-main-banner-fahasa .col-lg-4 {
+        display: flex;
+        gap: 15px;
+    }
+    .section-main-banner-fahasa .col-lg-4 > div {
+        flex: 1;
+    }
+}
+/* 
+
+
+
+
+/* Card Product Styling for Store Page */
+.card-product-grid-fahasa {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.1);
+    transition: all 0.3s;
+}
+
+.card-product-grid-fahasa:hover {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transform: translateY(-3px);
+}
+
+.card-product-grid-fahasa .img-wrap {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    overflow: hidden;
+    background-color: white;
+}
+
+.card-product-grid-fahasa .product-image {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+    transition: transform 0.3s;
+}
+
+.card-product-grid-fahasa:hover .product-image {
+    transform: scale(1.05);
+}
+
+.card-product-grid-fahasa .title {
+    color: #333;
+    font-weight: 500;
+    height: 40px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    text-decoration: none;
+}
+
+.card-product-grid-fahasa .price-new-bold {
+    font-weight: bold;
+    color: #ed1c24;
+    font-size: 16px;
+}
+
+.card-product-grid-fahasa .price-old {
+    color: #999;
+    font-size: 14px;
+    text-decoration: line-through;
+}
+
+/* Product detail styling */
+.product-meta {
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+}
+
+.thumbnail-nav-item {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 2px;
+    cursor: pointer;
+}
+
+.thumbnail-nav-item.active {
+    border-color: #007bff;
+}
+
+/* Quantity input styling */
+.quantity-control {
+    width: 120px;
+}
+
+.quantity-control .quantity-btn {
+    border: none;
+    background: transparent;
+    font-weight: bold;
+    font-size: 18px;
+    color: #333;
+}
+
+.quantity-control input {
+    width: 40px;
+    font-weight: bold;
+    background: transparent;
+}
+
+.quantity-control .input-group-prepend,
+.quantity-control .input-group-append {
+    cursor: pointer;
+}
+
+/* Fix border radius for prepend/append buttons */
+.quantity-control .input-group-prepend .btn {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.quantity-control .input-group-append .btn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+
+/* Đánh giá sản phẩm */
+.rating-stars i {
+    color: #f8ce0b;
+}
+
+.review-item {
+    border-bottom: 1px solid #eee;
+}
+
+.verified-badge {
+    display: inline-block;
+    font-size: 12px;
+}
+
+/* Tab styling */
+.nav-tabs .nav-link.active {
+    font-weight: bold;
+    color: #212529;
+    border-bottom: 2px solid #f57224;
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    color: #6c757d;
+    padding: 0.5rem 1rem;
+}
+
+.nav-tabs {
+    border-bottom: 1px solid #dee2e6;
+}
+
+/* Progress bar styling */
+.progress-bar {
+    background-color: #f57224;
+}
+
+/* Category styling */
+.category-item {
+    text-decoration: none;
+    color: #333;
+    transition: transform 0.2s;
+}
+
+.category-item:hover {
+    transform: translateY(-5px);
+    color: #007bff;
+}
+
+.category-icon {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s;
+}
+
+.category-item:hover .category-icon {
+    background-color: #007bff !important;
+    color: white;
+}
+
+.category-item:hover .category-icon i {
+    color: white;
+}
+
+.category-name {
+    margin-top: 8px;
+    font-weight: 500;
+    font-size: 0.85rem;
+}
+
+/* Category carousel styling */
+.categories-carousel-container {
+    position: relative;
+}
+
+.categories-carousel {
+    display: flex;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+    padding: 10px 5px;
+}
+
+.categories-carousel::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+.category-item-wrapper {
+    flex: 0 0 auto;
+    transition: transform 0.3s;
+}
+
+.category-item-wrapper:hover {
+    transform: translateY(-5px);
+}
+
+.categories-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 1px solid #eee;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    z-index: 1;
+}
+
+.categories-nav-btn:hover {
+    background-color: rgba(255, 255, 255, 1);
+}
+
+.carousel-control-prev.categories-nav-btn {
+    left: -10px;
+}
+
+.carousel-control-next.categories-nav-btn {
+    right: -10px;
+}
+
+.carousel-control-prev-icon, .carousel-control-next-icon {
+    filter: invert(1) grayscale(100%);
+}
+
