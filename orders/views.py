@@ -97,10 +97,15 @@ def place_order(request, total=0, quantity=0,):
             data.last_name = form.cleaned_data['last_name']
             data.phone = form.cleaned_data['phone']
             data.email = form.cleaned_data['email']
-            data.floor = form.cleaned_data['floor']
-            data.room = form.cleaned_data['room']
+            
+            data.city = form.cleaned_data['city']
+            data.district = form.cleaned_data['district']
+            data.ward = form.cleaned_data['ward']
+            data.address = form.cleaned_data['address']
+         
             data.order_note = form.cleaned_data['order_note']
             data.order_total = total
+            data.tax = 0 
             data.ip = request.META.get('REMOTE_ADDR')
             data.save()
             # Generate order number

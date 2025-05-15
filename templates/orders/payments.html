@@ -16,10 +16,13 @@
 					<h5 class="card-header">Billing Address</h5>
 					<div class="card-body">
 						<p class="card-text mb-0">Name: {{order.full_name}}</p>
-						<p class="card-text mb-0">Floor: {{order.floor}}</p>
-						<p class="card-text mb-0">Room: {{order.room}}</p>
+					
 						<p class="card-text mb-0">Email: {{order.email}}</p>
 						<p class="card-text mb-0">Number phone: {{order.phone}}</p>
+						 <p class="card-text mb-0">Address: {{order.address}}</p>
+						<p class="card-text mb-0">City/Province: {{order.city}}</p>
+						<p class="card-text mb-0">District: {{order.district}}</p>
+						<p class="card-text mb-0">Ward: {{order.ward}}</p>
 						{% if order.order_note %}
 						<b>Order Note: </b> {{order.order_note}}
 						{% endif %}

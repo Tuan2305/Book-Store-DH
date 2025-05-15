@@ -49,18 +49,11 @@
 <div class="form-row mb-3">
     <div class="col-md-6 mb-3">
         <label for="city">Thành phố/Tỉnh <span class="text-danger">*</span></label>
-        <input type="text" name="address" id="address" class="form-control" placeholder="Thành phố, tỉnh..." required>
-        
-            
-            <!-- Thêm các thành phố khác nếu cần -->
-        </select>
+        <input type="text" name="city" id="city" class="form-control" placeholder="Thành phố, tỉnh..." required>
     </div>
     <div class="col-md-6 mb-3">
         <label for="district">Quận/Huyện <span class="text-danger">*</span></label>
-        <input type="text" name="address" id="address" class="form-control" placeholder="Quận, huyện..." required>
-            
-            <!-- Districts sẽ được cập nhật bằng JavaScript dựa trên thành phố đã chọn -->
-        </select>
+        <input type="text" name="district" id="district" class="form-control" placeholder="Quận, huyện..." required>
     </div>
 </div>
 
@@ -68,10 +61,7 @@
 <div class="form-row mb-3">
     <div class="col-md-6 mb-3">
         <label for="ward">Phường/Xã <span class="text-danger">*</span></label>
-        <input type="text" name="address" id="address" class="form-control" placeholder="Số nhà, tên đường..." required>
-           
-            <!-- Wards sẽ được cập nhật bằng JavaScript dựa trên quận/huyện đã chọn -->
-        </select>
+        <input type="text" name="ward" id="ward" class="form-control" placeholder="Phường, xã..." required>
     </div>
     <div class="col-md-6 mb-3">
         <label for="address">Địa chỉ chi tiết <span class="text-danger">*</span></label>
@@ -142,12 +132,9 @@
                         <hr class="mt-3 mb-3">
                         
                         <!-- Phương thức thanh toán -->
-                        <h5 class="mb-3">Phương thức thanh toán</h5>
+                        
                         <div class="form-group mb-4">
-                            <div class="custom-control custom-radio custom-control-inline">
-                                <input type="radio" id="payment_cod" name="payment_method" value="COD" class="custom-control-input" checked>
-                                <label class="custom-control-label" for="payment_cod">Thanh toán khi nhận hàng</label>
-                            </div>
+                        
                             <div class="custom-control custom-radio custom-control-inline">
                                 <input type="radio" id="payment_card" name="payment_method" value="CARD" class="custom-control-input">
                                 <label class="custom-control-label" for="payment_card">Thẻ tín dụng/Ghi nợ</label>
@@ -155,11 +142,14 @@
                         </div>
                         
                         <div class="form-group">
-                            <button type="submit" class="btn btn-primary btn-lg btn-block">
+                            <button type="submit" id="place-order-btn" class="btn btn-primary btn-lg btn-block">
                                 Đặt hàng
                             </button>
                             <a href="{% url 'store' %}" class="btn btn-outline-secondary btn-block mt-2">Tiếp tục mua sắm</a>
                         </div>
+
+                        <!-- Thông báo đặt hàng thành công -->
+                        <div id="order-success-message" class="alert alert-success mt-3" style="display: none;"></div>
                         </form>
                     </div>
                 </div>
@@ -167,5 +157,64 @@
         </div>
     </div>
 </section>
+
+
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Xử lý khi submit form
+    $('form').submit(function(e) {
+        // Nếu chọn thanh toán khi nhận hàng
+        if ($('#payment_cod').is(':checked')) {
+            e.preventDefault(); // Ngăn chặn form submit bình thường
+            
+            // Hiển thị trạng thái đang xử lý
+            $('#place-order-btn').prop('disabled', true);
+            $('#place-order-btn').html('<i class="fas fa-spinner fa-spin"></i> Đang xử lý...');
+            
+            // Gửi form qua AJAX
+            $.ajax({
+                type: 'POST',
+                url: '{% url "place_order" %}',
+                data: $(this).serialize(),
+                headers: {'X-Requested-With': 'XMLHttpRequest'},
+                success: function(response) {
+                    if (response.success) {
+                        // Hiển thị thông báo thành công
+                        $('#order-success-message').show().html(`
+                            <i class="fas fa-check-circle mr-2"></i> 
+                            Đặt hàng thành công! Mã đơn hàng của bạn là: <strong>${response.order_number}</strong>
+                        `);
+                        
+                        // Cuộn đến thông báo
+                        $('html, body').animate({
+                            scrollTop: $('#order-success-message').offset().top - 100
+                        }, 500);
+                        
+                        // Chuyển hướng sau 3 giây
+                        setTimeout(function() {
+                            window.location.href = '{% url "dashboard" %}';
+                        }, 3000);
+                    } else {
+                        // Hiển thị lỗi nếu có
+                        alert('Lỗi: ' + response.message);
+                        $('#place-order-btn').prop('disabled', false);
+                        $('#place-order-btn').html('Đặt hàng');
+                    }
+                },
+                error: function() {
+                    alert('Đã xảy ra lỗi khi xử lý đơn hàng. Vui lòng thử lại.');
+                    $('#place-order-btn').prop('disabled', false);
+                    $('#place-order-btn').html('Đặt hàng');
+                }
+            });
+        }
+        // Nếu chọn thanh toán thẻ, form sẽ được gửi bình thường
+    });
+});
+</script>
+{% endblock %}
+
 
 {% endblock %}
