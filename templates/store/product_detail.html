@@ -70,50 +70,71 @@
                     {% endif %}
                     
                     <!-- Quantity and Add to Cart -->
-<div class="row align-items-center mb-4">
-    <div class="col-md-4">
-        <div class="input-group quantity-control border rounded">
-            <div class="input-group-prepend">
-                <button type="button" class="btn btn-outline-secondary quantity-btn" id="decrease-btn">-</button>
-            </div>
-            <input type="text" name="quantity" id="quantity" class="form-control text-center border-0" value="1" readonly>
-            <div class="input-group-append">
-                <button type="button" class="btn btn-outline-secondary quantity-btn" id="increase-btn">+</button>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-8">
-        <button type="submit" class="btn btn-primary btn-lg">
-            <i class="fas fa-shopping-cart mr-2"></i> Thêm vào giỏ
-        </button>
-    </div>
-</div>
+                    <div class="row align-items-center mb-4">
+                        <div class="col-md-4">
+                            <div class="input-group quantity-control border rounded">
+                                <div class="input-group-prepend">
+                                    <button type="button" class="btn btn-outline-secondary quantity-btn" id="decrease-btn">-</button>
+                                </div>
+                                <input type="text" name="quantity" id="quantity" class="form-control text-center border-0" value="1" readonly>
+                                <div class="input-group-append">
+                                    <button type="button" class="btn btn-outline-secondary quantity-btn" id="increase-btn">+</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-shopping-cart mr-2"></i> Thêm vào giỏ
+                            </button>
+                        </div>
+                    </div>
+                </form>
                 
                 <!-- Product Meta Information -->
                 <div class="product-meta mt-4">
                     <div class="d-flex align-items-center mb-3">
-                        <img src="{% static 'images/icons/check-icon.png' %}" alt="check" width="24" class="mr-2">
+                        <img src="{% static 'images/icon/check-icon.jpg' %}" alt="check" width="24" class="mr-2">
                         <span>Sản phẩm 100% chính hãng</span>
                     </div>
                     <div class="d-flex align-items-center mb-3">
-                        <img src="{% static 'images/icons/support-icon.png' %}" alt="support" width="24" class="mr-2">
+                        <img src="{% static 'images/icon/support-icon.png' %}" alt="support" width="24" class="mr-2">
                         <span>Tư vấn mua sách trong giờ hành chính</span>
                     </div>
                     <div class="d-flex align-items-center mb-3">
-                        <img src="{% static 'images/icons/shipping-icon.png' %}" alt="shipping" width="24" class="mr-2">
+                        <img src="{% static 'images/icon/shipping-icon.png' %}" alt="shipping" width="24" class="mr-2">
                         <span>Miễn phí vận chuyển cho đơn hàng từ 250,000đ</span>
                     </div>
                     <div class="d-flex align-items-center">
-                        <img src="{% static 'images/icons/phone-icon.png' %}" alt="hotline" width="24" class="mr-2">
+                        <img src="{% static 'images/icon/phone-icon.png' %}" alt="hotline" width="24" class="mr-2">
                         <span>Hotline: 1900 6401</span>
                     </div>
                 </div>
             </div>
         </div>
         
-        <!-- Product Description -->
-        </section>
-
+        <!-- Product Description and Reviews Tabs -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <ul class="nav nav-tabs" id="productTabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="description-tab" data-toggle="tab" href="#description" role="tab">Mô tả chi tiết</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="reviews-tab" data-toggle="tab" href="#reviews" role="tab">Đánh giá</a>
+                    </li>
+                </ul>
+                <div class="tab-content p-4 border border-top-0" id="productTabsContent">
+                    <div class="tab-pane fade show active" id="description" role="tabpanel">
+                        {{ single_product.description|linebreaks }}
+                    </div>
+                    <div class="tab-pane fade" id="reviews" role="tabpanel">
+                        <!-- Reviews content will go here -->
+                        <p>Chưa có đánh giá cho sản phẩm này.</p>
+                        <a href="{% url 'submit_review' single_product.id %}" class="btn btn-primary">Viết đánh giá</a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 
@@ -123,15 +144,24 @@
         // Increase quantity when + button is clicked
         $('#increase-btn').click(function() {
             let currentValue = parseInt($('#quantity').val());
-            $('#quantity').val(currentValue + 1);
+            // Cập nhật giá trị và đặt thuộc tính value
+            $('#quantity').val(currentValue + 1).attr('value', currentValue + 1);
         });
         
         // Decrease quantity when - button is clicked (minimum value is 1)
         $('#decrease-btn').click(function() {
             let currentValue = parseInt($('#quantity').val());
             if (currentValue > 1) {
-                $('#quantity').val(currentValue - 1);
+                // Cập nhật giá trị và đặt thuộc tính value
+                $('#quantity').val(currentValue - 1).attr('value', currentValue - 1);
             }
+        });
+        
+        // Đảm bảo form submit sẽ gửi giá trị hiện tại
+        $('form').submit(function() {
+            let currentQty = $('#quantity').val();
+            $('#quantity').attr('value', currentQty);
+            return true;
         });
     });
 </script>

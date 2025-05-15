@@ -395,3 +395,61 @@ body {
     filter: invert(1) grayscale(100%);
 }
 
+/* Footer styling */
+.title-footer {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #212529;
+}
+
+footer .social-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #f8f9fa;
+    color: #6c757d;
+    transition: all 0.3s;
+}
+
+footer .social-icon:hover {
+    background-color: #C92127; /* Fahasa red color */
+    color: white;
+}
+
+footer a {
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+footer a:hover {
+    color: #C92127 !important; /* Fahasa red color */
+}
+
+
+/* Checkout page styling */
+.checkout-section {
+    padding: 40px 0;
+}
+
+.form-group label {
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.checkout-card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    margin-bottom: 20px;
+}
+
+.checkout-card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+input[readonly] {
+    background-color: #f8f9fa;
+}

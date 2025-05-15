@@ -18,19 +18,19 @@ def store(request, category_slug=None):
 
     if category_slug != None:
         categories = get_object_or_404(Category, slug=category_slug)
-        products = Product.objects.filter(category=categories, is_available=True)
-        product_count = products.count()
+        products = Product.objects.filter(category=categories, is_available=True).order_by('id')
     else:
-        products = Product.objects.all().filter(is_available=True)
-        product_count = products.count()
+        products = Product.objects.all().filter(is_available=True).order_by('id')
 
-    # Loại bỏ phần phân trang
-    # paginator = Paginator(products, 6)
-    # page = request.GET.get('page')
-    # paged_products = paginator.get_page(page)
+    # Kích hoạt phân trang với 9 sản phẩm mỗi trang
+    paginator = Paginator(products, 9)  # 9 sản phẩm trên mỗi trang
+    page = request.GET.get('page')
+    paged_products = paginator.get_page(page)
+    
+    product_count = products.count()
 
     context = {
-        'products': products,  # Sử dụng tất cả sản phẩm thay vì paged_products
+        'products': paged_products,  # Sử dụng paged_products thay vì products
         'product_count': product_count,
         'links': Category.objects.all(),
         'category': categories,
