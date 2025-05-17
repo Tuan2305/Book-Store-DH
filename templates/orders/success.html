@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Thanh toán thành công | Book Store{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<div class="bg-light py-3">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}">Trang chủ</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Thanh toán thành công</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<!-- Success Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center p-5">
+                        <div class="mb-4">
+                            <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 90px; height: 90px;">
+                                <i class="fas fa-check fa-3x"></i>
+                            </div>
+                            <h2 class="mb-2">Thanh toán thành công!</h2>
+                            <p class="text-muted mb-4">Cảm ơn bạn đã đặt hàng. Đơn hàng của bạn đang được xử lý.</p>
+                            <p class="mb-1">Mã đơn hàng: <strong>{{ order.order_number }}</strong></p>
+                            <p class="mb-1">Mã giao dịch: <strong>{{ payment.payment_id }}</strong></p>
+                        </div>
+                        
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">Chi tiết đơn hàng</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Sản phẩm</th>
+                                                <th>Số lượng</th>
+                                                <th class="text-end">Đơn giá</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in ordered_products %}
+                                            <tr>
+                                                <td>{{ item.product.product_name }}</td>
+                                                <td>{{ item.quantity }}</td>
+                                                <td class="text-end">{{ item.product_price|floatformat:0 }} đ</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="2" class="text-end fw-bold">Tổng tiền:</td>
+                                                <td class="text-end fw-bold">{{ order.order_total|floatformat:0 }} đ</td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5 class="mb-3">Thông tin giao hàng</h5>
+                            <p class="mb-1">{{ order.full_name }}</p>
+                            <p class="mb-1">{{ order.address }}</p>
+                            <p class="mb-1">{{ order.ward }}, {{ order.district }}</p>
+                            <p class="mb-1">{{ order.city }}</p>
+                            <p class="mb-1">SĐT: {{ order.phone }}</p>
+                            <p class="mb-1">Email: {{ order.email }}</p>
+                        </div>
+                        
+                        <div class="d-flex flex-column flex-sm-row justify-content-center">
+                            <a href="{% url 'dashboard' %}" class="btn btn-primary me-sm-3 mb-3 mb-sm-0">
+                                <i class="fas fa-user me-2"></i>Tài khoản của tôi
+                            </a>
+                            <a href="{% url 'store' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-shopping-bag me-2"></i>Tiếp tục mua sắm
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

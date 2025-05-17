@@ -237,23 +237,21 @@ def payment_success(request):
                 product.stock -= item.quantity
                 product.save()
             
-            # Limpiar el carrito
+            # Xóa giỏ hàng
             CartItem.objects.filter(user=request.user).delete()
             
-            # Enviar correo
-            mail_subject = 'Gracias por tu pedido!'
-            message = render_to_string('orders/order_recieved_email.html', {
-                'user': request.user,
-                'order': order,
-            })
-            to_email = request.user.email
-            send_email = EmailMessage(mail_subject, message, to=[to_email])
-            send_email.send()
+            # Hiển thị trang thành công với thông tin đơn hàng
+            ordered_products = OrderProduct.objects.filter(order_id=order.id)
             
-            # Redirigir a la página de pedido completado
-            return redirect('order_complete', order_number=order_number)
-    
+            context = {
+                'order': order,
+                'ordered_products': ordered_products,
+                'payment': payment,
+            }
+            return render(request, 'orders/success.html', context)
+            
     except Exception as e:
+        print(str(e))
         return redirect('home')
 
 def payment_cancel(request):
