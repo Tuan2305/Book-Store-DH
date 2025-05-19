@@ -1,5 +1,5 @@
 from pyexpat.errors import messages
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from carts.models import CartItem
 from .forms import OrderForm
@@ -12,7 +12,11 @@ from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
-
+from django.contrib.admin.views.decorators import staff_member_required
+from django.utils import timezone
+from django.core.mail import send_mail
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 
 # Configurar Stripe con la clave secreta
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -292,3 +296,91 @@ def stripe_webhook(request):
             print(str(e))
             
     return HttpResponse(status=200)
+
+@staff_member_required
+def update_order_status(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    
+    if request.method == 'POST':
+        new_status = request.POST.get('status')
+        status_notes = request.POST.get('status_notes', '')
+        
+        # Lưu trạng thái trước khi thay đổi
+        old_status = order.status
+        
+        # Cập nhật trạng thái
+        order.status = new_status
+        order.status_notes = status_notes
+        
+        # Cập nhật thời gian tương ứng với trạng thái
+        if new_status == 'Processing' and old_status != 'Processing':
+            order.processed_at = timezone.now()
+        elif new_status == 'Shipping' and old_status != 'Shipping':
+            order.shipped_at = timezone.now()
+        elif new_status == 'Delivered' and old_status != 'Delivered':
+            order.delivered_at = timezone.now() 
+        elif new_status == 'Completed' and old_status != 'Completed':
+            order.completed_at = timezone.now()
+        elif new_status == 'Cancelled' and old_status != 'Cancelled':
+            order.cancelled_at = timezone.now()
+            
+        order.save()
+        
+        # Gửi email thông báo đến khách hàng
+        subject = f'Cập nhật trạng thái đơn hàng #{order.order_number}'
+        message = f'Đơn hàng của bạn đã được cập nhật sang trạng thái: {dict(Order.STATUS_CHOICES)[new_status]}'
+        if status_notes:
+            message += f'\n\nGhi chú: {status_notes}'
+        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [order.email])
+        
+        messages.success(request, f'Trạng thái đơn hàng đã được cập nhật thành {dict(Order.STATUS_CHOICES)[new_status]}')
+        return redirect('admin_order_detail', order_id=order.id)
+        
+    context = {
+        'order': order,
+        'status_choices': Order.STATUS_CHOICES,
+    }
+    return render(request, 'admin/orders/order_status_update.html', context)
+
+@staff_member_required
+def admin_order_detail(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    ordered_products = OrderProduct.objects.filter(order=order)
+    
+    context = {
+        'order': order,
+        'ordered_products': ordered_products,
+    }
+    return render(request, 'admin/orders/order_detail.html', context)
+
+@login_required(login_url='login')
+def cancel_order(request, order_number):
+    try:
+        order = Order.objects.get(order_number=order_number, user=request.user)
+        
+        # Chỉ cho phép hủy đơn hàng khi đang ở trạng thái New hoặc Processing
+        if order.status in ['New', 'Processing']:
+            if request.method == 'POST':
+                cancel_reason = request.POST.get('cancel_reason', '')
+                other_reason = request.POST.get('other_reason', '')
+                
+                if cancel_reason == 'other' and other_reason:
+                    final_reason = other_reason
+                else:
+                    final_reason = cancel_reason
+                
+                order.status = 'Cancelled'
+                order.cancelled_at = timezone.now()
+                order.cancel_reason = final_reason
+                order.save()
+                
+                messages.success(request, 'Đơn hàng đã được hủy thành công.')
+                return redirect('order_detail', order_number=order_number)
+            
+            return render(request, 'orders/cancel_order.html', {'order': order})
+        else:
+            messages.error(request, 'Bạn không thể hủy đơn hàng này vì nó đang được vận chuyển hoặc đã hoàn thành.')
+            return redirect('order_detail', order_number=order_number)
+    except Order.DoesNotExist:
+        messages.error(request, 'Đơn hàng không tồn tại.')
+        return redirect('my_orders')

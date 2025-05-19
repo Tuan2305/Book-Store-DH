@@ -1,0 +1,112 @@
+{% extends 'admin/base_site.html' %}
+{% load i18n admin_urls %}
+
+{% block title %}Chi tiết đơn hàng | {{ site_title }}{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
+    &rsaquo; <a href="{% url 'admin:app_list' app_label='orders' %}">Orders</a>
+    &rsaquo; <a href="{% url 'admin:orders_order_changelist' %}">Đơn hàng</a>
+    &rsaquo; {{ order.order_number }}
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <div class="module">
+        <h2>Chi tiết đơn hàng #{{ order.order_number }}</h2>
+        
+        <div class="results">
+            <div class="order-info">
+                <div class="row">
+                    <div class="col">
+                        <h3>Thông tin khách hàng</h3>
+                        <p><strong>Tên:</strong> {{ order.full_name }}</p>
+                        <p><strong>Email:</strong> {{ order.email }}</p>
+                        <p><strong>Điện thoại:</strong> {{ order.phone }}</p>
+                        <p><strong>Địa chỉ:</strong> {{ order.address }}, {{ order.ward }}, {{ order.district }}, {{ order.city }}</p>
+                    </div>
+                    <div class="col">
+                        <h3>Thông tin đơn hàng</h3>
+                        <p><strong>Ngày đặt:</strong> {{ order.created_at|date:"d/m/Y H:i" }}</p>
+                        <p><strong>Trạng thái:</strong> 
+                            <span class="status-badge status-{{ order.status|lower }}">
+                                {% for code, name in order.STATUS_CHOICES %}
+                                    {% if code == order.status %}{{ name }}{% endif %}
+                                {% endfor %}
+                            </span>
+                        </p>
+                        <p><strong>Thanh toán:</strong> 
+                            {% if order.payment %}
+                                {{ order.payment.payment_method }} 
+                                ({{ order.payment.status }})
+                            {% else %}
+                                Chưa thanh toán
+                            {% endif %}
+                        </p>
+                        <p><strong>Tổng tiền:</strong> {{ order.order_total|floatformat:0 }} đ</p>
+                    </div>
+                </div>
+            </div>
+            
+            <h3>Sản phẩm đã đặt</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sản phẩm</th>
+                        <th>Giá</th>
+                        <th>Số lượng</th>
+                        <th>Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in ordered_products %}
+                    <tr>
+                        <td>{{ item.product.product_name }}</td>
+                        <td>{{ item.product_price|floatformat:0 }} đ</td>
+                        <td>{{ item.quantity }}</td>
+                        <td class="text-end">{{ item.sub_total|floatformat:0 }} đ</td>
+                    </tr>
+                    {% endfor %}
+                    <tr>
+                        <td colspan="3" style="text-align: right;"><strong>Tổng cộng:</strong></td>
+                        <td><strong>{{ order.order_total|floatformat:0 }} đ</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="submit-row">
+                <a href="{% url 'admin_update_order_status' order.id %}" class="button default">Cập nhật trạng thái</a>
+                <a href="{% url 'admin:orders_order_change' order.id %}" class="button">Chỉnh sửa</a>
+                <a href="{% url 'admin:orders_order_changelist' %}" class="closelink">Danh sách đơn hàng</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+.status-new { background-color: #17a2b8; color: white; }
+.status-processing { background-color: #6c757d; color: white; }
+.status-shipping { background-color: #fd7e14; color: white; }
+.status-delivered { background-color: #007bff; color: white; }
+.status-completed { background-color: #28a745; color: white; }
+.status-cancelled { background-color: #dc3545; color: white; }
+
+.row {
+    display: flex;
+    margin-bottom: 20px;
+}
+
+.col {
+    flex: 1;
+    padding-right: 20px;
+}
+</style>
+{% endblock %}

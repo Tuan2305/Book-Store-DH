@@ -94,3 +94,5 @@ class ReviewRating(models.Model):
     
     def __str__(self):
         return f"{self.user.first_name}'s review on {self.product.product_name}"
+    
+

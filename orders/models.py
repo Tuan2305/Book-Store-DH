@@ -19,11 +19,13 @@ class Payment(models.Model):
 
 
 class Order(models.Model):
-    STATUS = (
-        ('New', 'New'),
-        ('Accepted', 'Accepted'),
-        ('Completed', 'Completed'),
-        ('Cancelled', 'Cancelled'),
+    STATUS_CHOICES = (
+        ('New', 'Mới'),
+        ('Processing', 'Đang chuẩn bị'),
+        ('Shipping', 'Đang vận chuyển'),
+        ('Delivered', 'Đã giao hàng'),
+        ('Completed', 'Hoàn thành'),
+        ('Cancelled', 'Đã hủy'),
     )
 
     user = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True)
@@ -42,12 +44,24 @@ class Order(models.Model):
     
     order_note = models.CharField(max_length=100, blank=True)
     order_total = models.FloatField()
-    status = models.CharField(max_length=10, choices=STATUS, default='New')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='New')
+    
     ip = models.CharField(blank=True, max_length=20)
     is_ordered = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+     # Thêm trường lý do hủy đơn
+    cancel_reason = models.TextField(blank=True, null=True)
+    # Thêm trường ghi chú cập nhật trạng thái
+    status_notes = models.TextField(blank=True, null=True)
+    # Thêm các trường thời gian cho từng trạng thái
+    processed_at = models.DateTimeField(blank=True, null=True)
+    shipped_at = models.DateTimeField(blank=True, null=True)
+    delivered_at = models.DateTimeField(blank=True, null=True)
+    completed_at = models.DateTimeField(blank=True, null=True)
+    cancelled_at = models.DateTimeField(blank=True, null=True)
+    
     class Meta:
         db_table = 'orders'
 
@@ -75,4 +89,7 @@ class OrderProduct(models.Model):
 
     def __str__(self):
         return self.product.product_name
+    
+    def sub_total(self):
+        return self.product_price * self.quantity
 

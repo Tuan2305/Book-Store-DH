@@ -553,3 +553,109 @@ input[readonly] {
 }
 
 
+/* Order Tracking Timeline */
+.order-tracking-timeline {
+    padding: 20px 0;
+}
+
+.timeline-track {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    margin: 40px 0;
+    padding-top: 20px;
+}
+
+.timeline-track::before {
+    content: '';
+    position: absolute;
+    top: 30px;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background-color: #e9ecef;
+    z-index: 1;
+}
+
+.timeline-progress {
+    position: absolute;
+    top: 30px;
+    left: 0;
+    height: 4px;
+    background-color: #28a745;
+    z-index: 2;
+    transition: width 0.5s ease;
+}
+
+.timeline-step {
+    position: relative;
+    z-index: 3;
+    text-align: center;
+    width: 20%;
+}
+
+.timeline-step-icon {
+    width: 50px;
+    height: 50px;
+    margin: 0 auto 10px;
+    border-radius: 50%;
+    background-color: #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    font-size: 1.25rem;
+    transition: all 0.3s ease;
+}
+
+.timeline-step.active .timeline-step-icon {
+    background-color: #28a745;
+    color: white;
+}
+
+.timeline-step-label {
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: #6c757d;
+    transition: color 0.3s ease;
+}
+
+.timeline-step.active .timeline-step-label {
+    color: #212529;
+    font-weight: 600;
+}
+
+.timeline-step-date {
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+/* For cancelled orders */
+.cancelled-order .timeline-track::before {
+    background-color: #dc3545;
+}
+
+/* Timeline trong dashboard */
+.timeline {
+    position: relative;
+    padding-left: 1.5rem;
+}
+
+.timeline-item {
+    position: relative;
+    padding-bottom: 1.5rem;
+    border-left: 1px solid #e0e0e0;
+    padding-left: 1.5rem;
+}
+
+.timeline-item:last-child {
+    padding-bottom: 0;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -0.4rem;
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 50%;
+}

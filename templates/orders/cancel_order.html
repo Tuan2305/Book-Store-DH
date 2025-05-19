@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Hủy đơn hàng | Book Store{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<div class="bg-light py-3">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Tài khoản của tôi</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'my_orders' %}">Đơn hàng của tôi</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'order_detail' order.order_number %}">{{ order.order_number }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Hủy đơn hàng</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<!-- Cancel Order Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white py-3 border-0">
+                        <h5 class="mb-0 text-danger">Hủy đơn hàng #{{ order.order_number }}</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="alert alert-warning mb-4">
+                            <h6 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>Lưu ý!</h6>
+                            <p class="mb-0">Hành động này không thể hoàn tác. Sau khi xác nhận hủy, đơn hàng sẽ bị hủy vĩnh viễn.</p>
+                        </div>
+                        
+                        <form action="{% url 'cancel_order' order.order_number %}" method="POST">
+                            {% csrf_token %}
+                            
+                            <div class="mb-4">
+                                <label for="cancel_reason" class="form-label">Lý do hủy đơn <span class="text-danger">*</span></label>
+                                <select name="cancel_reason" id="cancel_reason" class="form-select mb-2" required>
+                                    <option value="">-- Chọn lý do --</option>
+                                    <option value="Tôi muốn thay đổi địa chỉ giao hàng">Tôi muốn thay đổi địa chỉ giao hàng</option>
+                                    <option value="Tôi muốn thay đổi phương thức thanh toán">Tôi muốn thay đổi phương thức thanh toán</option>
+                                    <option value="Tìm thấy giá tốt hơn ở nơi khác">Tìm thấy giá tốt hơn ở nơi khác</option>
+                                    <option value="Tôi không muốn đặt hàng nữa">Tôi không muốn đặt hàng nữa</option>
+                                    <option value="other">Lý do khác</option>
+                                </select>
+                                
+                                <div id="other_reason_div" style="display: none;">
+                                    <label for="other_reason" class="form-label">Lý do cụ thể</label>
+                                    <textarea name="other_reason" id="other_reason" class="form-control" rows="3" placeholder="Vui lòng nêu lý do của bạn..."></textarea>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between">
+                                <a href="{% url 'order_detail' order.order_number %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Quay lại
+                                </a>
+                                <button type="submit" class="btn btn-danger" onclick="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')">
+                                    <i class="fas fa-times-circle me-2"></i>Xác nhận hủy đơn hàng
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const cancelReasonSelect = document.getElementById('cancel_reason');
+    const otherReasonDiv = document.getElementById('other_reason_div');
+    const otherReasonInput = document.getElementById('other_reason');
+    
+    cancelReasonSelect.addEventListener('change', function() {
+        if (this.value === 'other') {
+            otherReasonDiv.style.display = 'block';
+            otherReasonInput.setAttribute('required', 'required');
+        } else {
+            otherReasonDiv.style.display = 'none';
+            otherReasonInput.removeAttribute('required');
+        }
+    });
+});
+</script>
+{% endblock %}
+
+{% endblock %}

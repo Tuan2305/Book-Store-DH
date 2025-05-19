@@ -23,3 +23,4 @@ class AccountAdmin(UserAdmin):
 
 # Đăng ký với cả admin site mặc định và custom admin site
 admin.site.register(Account, AccountAdmin)
+

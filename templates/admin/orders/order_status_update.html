@@ -1,0 +1,81 @@
+{% extends 'admin/base_site.html' %}
+{% load i18n admin_urls %}
+
+{% block title %}Cập nhật trạng thái đơn hàng | {{ site_title }}{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
+    &rsaquo; <a href="{% url 'admin:app_list' app_label='orders' %}">Orders</a>
+    &rsaquo; <a href="{% url 'admin:orders_order_changelist' %}">Đơn hàng</a>
+    &rsaquo; <a href="{% url 'admin:orders_order_change' order.id %}">{{ order.order_number }}</a>
+    &rsaquo; Cập nhật trạng thái
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <div class="module">
+        <h2>Cập nhật trạng thái đơn hàng #{{ order.order_number }}</h2>
+        
+        <div class="order-info">
+            <p><strong>Khách hàng:</strong> {{ order.full_name }}</p>
+            <p><strong>Email:</strong> {{ order.email }}</p>
+            <p><strong>Địa chỉ:</strong> {{ order.address }}, {{ order.ward }}, {{ order.district }}, {{ order.city }}</p>
+            <p><strong>Ngày đặt hàng:</strong> {{ order.created_at|date:"d/m/Y H:i" }}</p>
+            <p><strong>Trạng thái hiện tại:</strong> 
+                <span class="status-badge status-{{ order.status|lower }}">
+                    {% for code, name in status_choices %}
+                        {% if code == order.status %}{{ name }}{% endif %}
+                    {% endfor %}
+                </span>
+            </p>
+        </div>
+        
+        <form action="{% url 'admin_update_order_status' order.id %}" method="post">
+            {% csrf_token %}
+            
+            <fieldset class="module aligned">
+                <div class="form-row">
+                    <div>
+                        <label for="id_status" class="required">Trạng thái mới:</label>
+                        <select name="status" id="id_status" class="vSelectField" required>
+                            {% for code, name in status_choices %}
+                            <option value="{{ code }}" {% if code == order.status %}selected{% endif %}>{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div>
+                        <label for="id_status_notes">Ghi chú cho khách hàng:</label>
+                        <textarea name="status_notes" id="id_status_notes" class="vLargeTextField" rows="4">{{ order.status_notes }}</textarea>
+                        <p class="help">Ghi chú này sẽ được hiển thị cho khách hàng trong trang chi tiết đơn hàng.</p>
+                    </div>
+                </div>
+            </fieldset>
+            
+            <div class="submit-row">
+                <input type="submit" value="Cập nhật trạng thái" class="default" />
+                <a href="{% url 'admin:orders_order_change' order.id %}" class="closelink">Hủy</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+.status-new { background-color: #17a2b8; color: white; }
+.status-processing { background-color: #6c757d; color: white; }
+.status-shipping { background-color: #fd7e14; color: white; }
+.status-delivered { background-color: #007bff; color: white; }
+.status-completed { background-color: #28a745; color: white; }
+.status-cancelled { background-color: #dc3545; color: white; }
+</style>
+{% endblock %}

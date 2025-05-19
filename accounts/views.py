@@ -18,6 +18,7 @@ from carts.models import Cart, CartItem
 import requests
 
 
+
 def register(request):
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
@@ -115,9 +116,31 @@ def activate(request, uidb64, token):
         return redirect('register')
 
 
-@login_required(login_url = 'login')
+@login_required(login_url='login')
 def dashboard(request):
-    return render(request, 'accounts/dashboard.html')
+    # Import Order model nếu chưa import
+    from orders.models import Order
+    
+    # Lấy tất cả đơn hàng
+    orders = Order.objects.filter(user=request.user, is_ordered=True).order_by('-created_at')
+    orders_count = orders.count()
+    
+    # Đếm số đơn hàng theo trạng thái
+    processing_count = orders.filter(status='Processing').count()
+    shipping_count = orders.filter(status='Shipping').count()
+    
+    # Lấy đơn hàng gần đây nhất
+    recent_orders = orders[:5]  # 5 đơn hàng gần nhất
+    
+    
+    context = {
+        'orders_count': orders_count,
+        'processing_count': processing_count,
+        'shipping_count': shipping_count,
+        'recent_orders': recent_orders,
+    }
+    
+    return render(request, 'accounts/dashboard.html', context)
 
 
 def forgotPassword(request):
@@ -260,6 +283,3 @@ def order_detail(request, order_number):
 def address_book(request):
     return render(request, 'accounts/address_book.html')
 
-@login_required(login_url='login')
-def wishlist(request):
-    return render(request, 'accounts/wishlist.html')
