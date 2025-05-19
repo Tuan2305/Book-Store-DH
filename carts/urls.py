@@ -10,7 +10,7 @@ urlpatterns = [
     
     # URL mới cho API AJAX
     path('update_cart_ajax/', views.cart_update_ajax, name='update_cart_ajax'),
-    
+    path('add_cart_ajax/<int:product_id>/', views.add_cart_ajax, name='add_cart_ajax'),
     # Thêm URL cho checkout
     path('checkout/', views.checkout, name='checkout'),
 ]

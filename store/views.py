@@ -15,26 +15,54 @@ from django.contrib.auth.decorators import login_required
 def store(request, category_slug=None):
     categories = None
     products = None
-
+    
     if category_slug != None:
         categories = get_object_or_404(Category, slug=category_slug)
-        products = Product.objects.filter(category=categories, is_available=True).order_by('id')
+        products = Product.objects.filter(category=categories, is_available=True)
     else:
         products = Product.objects.all().filter(is_available=True).order_by('id')
-
-    # Kích hoạt phân trang với 9 sản phẩm mỗi trang
-    paginator = Paginator(products, 9)  # 9 sản phẩm trên mỗi trang
+        
+    # Lấy các tham số lọc giá từ request
+    min_price = request.GET.get('min_price', 0)
+    max_price = request.GET.get('max_price', 500000)
+    
+    # Chuyển đổi giá trị thành số (với xử lý lỗi)
+    try:
+        min_price = int(min_price)
+    except (ValueError, TypeError):
+        min_price = 0
+        
+    try:
+        max_price = int(max_price)
+    except (ValueError, TypeError):
+        max_price = 500000
+    
+    # Lọc sản phẩm theo khoảng giá
+    products = products.filter(price__gte=min_price, price__lte=max_price)
+    
+    # Lọc theo từ khóa nếu có
+    if 'keyword' in request.GET:
+        keyword = request.GET['keyword']
+        if keyword:
+            # Tìm kiếm trong tên hoặc mô tả sản phẩm
+            products = products.filter(Q(product_name__icontains=keyword) | 
+                                     Q(description__icontains=keyword))
+    
+    product_count = products.count()
+    
+    # Phân trang
+    paginator = Paginator(products, 6)  # 6 sản phẩm mỗi trang
     page = request.GET.get('page')
     paged_products = paginator.get_page(page)
     
-    product_count = products.count()
-
     context = {
-        'products': paged_products,  # Sử dụng paged_products thay vì products
+        'products': paged_products,
         'product_count': product_count,
-        'links': Category.objects.all(),
-        'category': categories,
+        'category_slug': category_slug,
+        'min_price': min_price,
+        'max_price': max_price,
     }
+    
     return render(request, 'store/store.html', context)
 
 

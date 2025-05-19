@@ -34,7 +34,7 @@ def create_checkout_session(request, order_number):
             line_items.append({
                 'price_data': {
                     'currency': 'vnd',
-                    'unit_amount': int(item.product.price * 100),  # Stripe necesita el precio en centavos
+                    'unit_amount': int(item.product.price),  # Stripe necesita el precio en centavos
                     'product_data': {
                         'name': item.product.product_name,
                         'description': item.product.description[:100] if hasattr(item.product, 'description') else '',
@@ -183,75 +183,37 @@ def place_order(request, total=0, quantity=0,):
         return redirect('checkout')
 
 def payment_success(request):
-    order_number = request.GET.get('order_number')
-    session_id = request.GET.get('session_id')
-    
-    if not session_id:
-        return redirect('home')
+    # Lấy thông tin từ session
+    order_id = request.session.get('order_id')
+    payment_id = request.session.get('payment_id')
     
     try:
-        # Verificar la sesión de Stripe para confirmar el pago
-        session = stripe.checkout.Session.retrieve(session_id)
+        order = Order.objects.get(id=order_id, user=request.user, is_ordered=True)
+        payment = Payment.objects.get(payment_id=payment_id)
+        ordered_products = OrderProduct.objects.filter(order=order)
         
-        if session.payment_status == 'paid':
-            # Actualizar la orden con la información de pago
-            order = Order.objects.get(order_number=order_number, is_ordered=False)
+        # Cập nhật trạng thái đơn hàng
+        order.status = 'Completed'
+        order.save()
+        
+        # Cập nhật trạng thái thanh toán
+        payment.status = 'COMPLETED'
+        payment.save()
+        
+        context = {
+            'order': order,
+            'payment': payment,
+            'ordered_products': ordered_products,
+        }
+        
+        # Xóa session khi đã hiển thị thành công
+        if 'order_id' in request.session:
+            del request.session['order_id']
+        if 'payment_id' in request.session:
+            del request.session['payment_id']
             
-            # Crear un registro de pago
-            payment = Payment(
-                user=request.user,
-                payment_id=session_id,
-                payment_method="Stripe",
-                amount_paid=order.order_total,
-                status="COMPLETED"
-            )
-            payment.save()
-            
-            order.payment = payment
-            order.is_ordered = True
-            order.save()
-            
-            # Mover los productos del carrito a OrderProduct
-            cart_items = CartItem.objects.filter(user=request.user)
-            
-            for item in cart_items:
-                orderproduct = OrderProduct()
-                orderproduct.order_id = order.id
-                orderproduct.payment = payment
-                orderproduct.user_id = request.user.id
-                orderproduct.product_id = item.product_id
-                orderproduct.quantity = item.quantity
-                orderproduct.product_price = item.product.price
-                orderproduct.ordered = True
-                orderproduct.save()
-                
-                # Procesar variaciones si existen
-                cart_item = CartItem.objects.get(id=item.id)
-                product_variation = cart_item.variations.all()
-                orderproduct = OrderProduct.objects.get(id=orderproduct.id)
-                orderproduct.variations.set(product_variation)
-                orderproduct.save()
-                
-                # Reducir stock
-                product = Product.objects.get(id=item.product_id)
-                product.stock -= item.quantity
-                product.save()
-            
-            # Xóa giỏ hàng
-            CartItem.objects.filter(user=request.user).delete()
-            
-            # Hiển thị trang thành công với thông tin đơn hàng
-            ordered_products = OrderProduct.objects.filter(order_id=order.id)
-            
-            context = {
-                'order': order,
-                'ordered_products': ordered_products,
-                'payment': payment,
-            }
-            return render(request, 'orders/success.html', context)
-            
-    except Exception as e:
-        print(str(e))
+        return render(request, 'orders/success.html', context)
+    except (Order.DoesNotExist, Payment.DoesNotExist):
         return redirect('home')
 
 def payment_cancel(request):
@@ -291,3 +253,42 @@ def order_complete(request, order_number):
         return render(request, 'orders/order_complete.html', context)
     except (Order.DoesNotExist, Payment.DoesNotExist):
         return redirect('home')
+
+# orders/views.py
+@csrf_exempt
+def stripe_webhook(request):
+    payload = request.body
+    sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
+    event = None
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
+        )
+    except ValueError:
+        return HttpResponse(status=400)
+    except stripe.error.SignatureVerificationError:
+        return HttpResponse(status=400)
+
+    # Xử lý event payment_intent.succeeded
+    if event['type'] == 'checkout.session.completed':
+        session = event['data']['object']
+        
+        # Lấy đơn hàng và cập nhật trạng thái
+        try:
+            order_number = session.metadata.order_number
+            order = Order.objects.get(order_number=order_number)
+            
+            # Cập nhật trạng thái đơn hàng và thanh toán
+            payment = Payment.objects.get(order=order)
+            payment.status = 'COMPLETED'
+            payment.save()
+            
+            order.status = 'Completed'
+            order.is_ordered = True
+            order.save()
+            
+        except Exception as e:
+            print(str(e))
+            
+    return HttpResponse(status=200)

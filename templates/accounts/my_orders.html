@@ -85,6 +85,7 @@
                                             <td>{{ order.order_number }}</td>
                                             <td>{{ order.created_at|date:"d/m/Y" }}</td>
                                             <td>{{ order.order_total|floatformat:0 }} đ</td>
+                                            <!-- Phần hiển thị trạng thái đơn hàng -->
                                             <td>
                                                 {% if order.status == 'New' %}
                                                 <span class="badge bg-info">Mới</span>
@@ -96,6 +97,17 @@
                                                 <span class="badge bg-danger">Đã hủy</span>
                                                 {% else %}
                                                 <span class="badge bg-secondary">{{ order.status }}</span>
+                                                {% endif %}
+                                                
+                                                <!-- Hiển thị trạng thái thanh toán -->
+                                                {% if order.payment %}
+                                                    {% if order.payment.status == 'COMPLETED' %}
+                                                    <span class="badge bg-success">Đã thanh toán</span>
+                                                    {% elif order.payment.status == 'PENDING' %}
+                                                    <span class="badge bg-warning text-dark">Chờ thanh toán</span>
+                                                    {% else %}
+                                                    <span class="badge bg-secondary">{{ order.payment.status }}</span>
+                                                    {% endif %}
                                                 {% endif %}
                                             </td>
                                             <td>

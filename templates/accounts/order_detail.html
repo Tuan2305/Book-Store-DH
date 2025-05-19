@@ -85,11 +85,23 @@
                     </div>
                     <div class="card-body">
                         <div class="row mb-4">
-                            <div class="col-md-6">
+                           <div class="col-md-6">
                                 <h6 class="mb-2">Thông tin đơn hàng</h6>
                                 <p class="mb-1">Ngày đặt: {{ order.created_at|date:"d/m/Y H:i" }}</p>
                                 <p class="mb-1">Tổng tiền: {{ order.order_total|floatformat:0 }} đ</p>
                                 <p class="mb-1">Phương thức thanh toán: {{ order.payment.payment_method }}</p>
+                                <p class="mb-1">Trạng thái thanh toán: 
+                                    {% if order.payment.status == 'COMPLETED' %}
+                                    <span class="text-success">Đã thanh toán</span>
+                                    {% elif order.payment.status == 'PENDING' %}
+                                    <span class="text-warning">Chờ thanh toán</span>
+                                    {% else %}
+                                    <span>{{ order.payment.status }}</span>
+                                    {% endif %}
+                                </p>
+                                {% if order.payment and order.payment.status == 'COMPLETED' %}
+                                <p class="mb-1">Thời gian thanh toán: <span class="text-success">{{ order.payment.created_at|date:"d/m/Y H:i:s" }}</span></p>
+                                {% endif %}
                             </div>
                             <div class="col-md-6">
                                 <h6 class="mb-2">Thông tin giao hàng</h6>

@@ -35,7 +35,7 @@ body {
     transform: translateY(-3px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
-.promo-card-fahasa a {
+a a {
     text-decoration: none;
     color: inherit;
     display: block; /* Để cả card là link */
@@ -453,3 +453,103 @@ footer a:hover {
 input[readonly] {
     background-color: #f8f9fa;
 }
+/* Styling giỏ hàng */
+.table-shopping-cart {
+    margin-bottom: 0;
+}
+
+.cart-product-img img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+}
+
+.cart-product-info a {
+    font-weight: 500;
+    text-decoration: none;
+    color: #333;
+}
+
+.cart-product-info a:hover {
+    color: #0d6efd;
+}
+
+.quantity-control .input-group {
+    width: 120px;
+}
+
+.quantity-control .form-control {
+    text-align: center;
+    font-weight: 500;
+}
+
+.item-price {
+    font-weight: 500;
+    color: #0d6efd;
+}
+
+/* Hiệu ứng cho các thay đổi */
+.updating {
+    background-color: rgba(255, 243, 205, 0.5);
+    transition: background-color 0.5s ease;
+}
+
+.price-updated {
+    animation: flash-price 0.7s;
+}
+
+@keyframes flash-price {
+    0% { background-color: transparent; }
+    50% { background-color: rgba(255, 243, 205, 0.7); }
+    100% { background-color: transparent; }
+}
+
+/* Empty cart styling */
+.empty-cart-icon {
+    color: #dee2e6;
+}
+
+
+
+
+/* Thêm vào file CSS của bạn */
+
+/* Đảm bảo hình ảnh luôn hiển thị đúng tỷ lệ trên mọi thiết bị */
+.promo-card-fahasa img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    min-height: 120px; /* Đảm bảo chiều cao tối thiểu */
+}
+
+/* Cải thiện hiển thị trên thiết bị nhỏ */
+@media (max-width: 767px) {
+    .section-promotion-blocks-fahasa .card-img-top {
+        padding: 5px !important;
+    }
+    
+    .promo-card-fahasa {
+        margin-bottom: 10px;
+    }
+    
+    /* Đảm bảo banner luôn hiển thị đúng kích thước */
+    .section-main-banner-fahasa img {
+        width: 100%;
+        height: auto;
+    }
+    
+    /* Điều chỉnh kích thước sản phẩm trên mobile */
+    .card-product-grid-fahasa .img-wrap {
+        height: 150px;
+    }
+    
+    .card-product-grid-fahasa .title {
+        font-size: 0.85rem;
+    }
+    
+    .price-new-bold {
+        font-size: 0.9rem;
+    }
+}
+
+

@@ -5,6 +5,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 
+from django.views.decorators.http import require_POST
+from django.shortcuts import get_object_or_404
 # Create your views here.
 def _cart_id(request):
     cart = request.session.session_key
@@ -225,123 +227,202 @@ def checkout(request):
     except Exception as e:
         return redirect('cart')
 
+
+@require_POST
 def cart_update_ajax(request):
-    if request.method == 'POST':
+    """
+    Xử lý các thao tác AJAX với giỏ hàng: tăng, giảm hoặc xóa sản phẩm
+    """
+    try:
         product_id = request.POST.get('product_id')
-        action = request.POST.get('action')  # Có thể là 'increase', 'decrease', 'remove'
+        action = request.POST.get('action')
         cart_item_id = request.POST.get('cart_item_id')
         
-        if action and product_id:
-            try:
-                product = Product.objects.get(id=product_id)
-            except Product.DoesNotExist:
-                return JsonResponse({'status': 'error', 'message': 'Sản phẩm không tồn tại'})
+        if not all([product_id, action, cart_item_id]):
+            return JsonResponse({'status': 'error', 'message': 'Thiếu thông tin cần thiết'})
+        
+        product = get_object_or_404(Product, id=product_id)
+        
+        # Xử lý người dùng đã đăng nhập
+        if request.user.is_authenticated:
+            cart_item = get_object_or_404(CartItem, id=cart_item_id, user=request.user)
             
-            # Xử lý người dùng đã đăng nhập
-            if request.user.is_authenticated:
-                try:
-                    if cart_item_id:
-                        cart_item = CartItem.objects.get(id=cart_item_id, user=request.user)
-                    else:
-                        # Tìm cart_item dựa trên product và user
-                        cart_item = CartItem.objects.get(product=product, user=request.user)
-                    
-                    if action == 'increase':
-                        cart_item.quantity += 1
-                    elif action == 'decrease':
-                        if cart_item.quantity > 1:
-                            cart_item.quantity -= 1
-                        else:
-                            cart_item.delete()
-                            return JsonResponse({
-                                'removed': True,
-                                'product_id': product_id,
-                                'cart_item_id': cart_item_id
-                            })
-                    elif action == 'remove':
-                        cart_item.delete()
-                        return JsonResponse({
-                            'removed': True,
-                            'product_id': product_id,
-                            'cart_item_id': cart_item_id
-                        })
-                    
+            if action == 'increase':
+                cart_item.quantity += 1
+                cart_item.save()
+            
+            elif action == 'decrease':
+                if cart_item.quantity > 1:
+                    cart_item.quantity -= 1
                     cart_item.save()
-                    
-                    # Tính toán subtotal và total
-                    sub_total = cart_item.quantity * cart_item.product.price
+                else:
+                    cart_item.delete()
+                    # Tính toán lại giỏ hàng sau khi xóa
                     cart_items = CartItem.objects.filter(user=request.user)
-                    total = sum(item.quantity * item.product.price for item in cart_items)
+                    total = sum(item.product.price * item.quantity for item in cart_items)
+                    cart_count = sum(item.quantity for item in cart_items)
                     
                     return JsonResponse({
-                        'status': 'success',
-                        'quantity': cart_item.quantity,
-                        'sub_total': sub_total,
+                        'removed': True,
+                        'product_id': product_id,
+                        'cart_item_id': cart_item_id,
                         'total': total,
-                        'cart_count': sum(item.quantity for item in cart_items)
+                        'cart_count': cart_count
                     })
-                    
-                except CartItem.DoesNotExist:
-                    return JsonResponse({'status': 'error', 'message': 'Sản phẩm không tồn tại trong giỏ hàng'})
             
-            # Xử lý người dùng chưa đăng nhập (dùng session)
+            elif action == 'remove':
+                cart_item.delete()
+                # Tính toán lại giỏ hàng sau khi xóa
+                cart_items = CartItem.objects.filter(user=request.user)
+                total = sum(item.product.price * item.quantity for item in cart_items)
+                cart_count = sum(item.quantity for item in cart_items)
+                
+                return JsonResponse({
+                    'removed': True,
+                    'product_id': product_id,
+                    'cart_item_id': cart_item_id,
+                    'total': total,
+                    'cart_count': cart_count
+                })
+            
             else:
-                try:
-                    # Lấy cart sử dụng cart_id từ session
-                    cart = Cart.objects.get(cart_id=_cart_id(request))
-                    
-                    # Tìm cart_item dựa trên product, cart và cart_item_id nếu có
-                    if cart_item_id:
-                        cart_item = CartItem.objects.get(id=cart_item_id, cart=cart)
+                return JsonResponse({'status': 'error', 'message': 'Thao tác không hợp lệ'})
+            
+            # Tính toán lại giỏ hàng
+            sub_total = cart_item.product.price * cart_item.quantity
+            cart_items = CartItem.objects.filter(user=request.user)
+            total = sum(item.product.price * item.quantity for item in cart_items)
+            cart_count = sum(item.quantity for item in cart_items)
+            
+            return JsonResponse({
+                'status': 'success',
+                'quantity': cart_item.quantity,
+                'sub_total': sub_total,
+                'total': total,
+                'cart_count': cart_count
+            })
+        
+        # Xử lý người dùng chưa đăng nhập (dùng session)
+        else:
+            try:
+                cart = Cart.objects.get(cart_id=_cart_id(request))
+                cart_item = get_object_or_404(CartItem, id=cart_item_id, cart=cart)
+                
+                if action == 'increase':
+                    cart_item.quantity += 1
+                    cart_item.save()
+                
+                elif action == 'decrease':
+                    if cart_item.quantity > 1:
+                        cart_item.quantity -= 1
+                        cart_item.save()
                     else:
-                        # Tìm cart_item dựa trên product và cart
-                        cart_item = CartItem.objects.get(product=product, cart=cart)
-                    
-                    # Xử lý các action tương tự như với user đã đăng nhập
-                    if action == 'increase':
-                        cart_item.quantity += 1
-                    elif action == 'decrease':
-                        if cart_item.quantity > 1:
-                            cart_item.quantity -= 1
-                        else:
-                            cart_item.delete()
-                            return JsonResponse({
-                                'removed': True,
-                                'product_id': product_id,
-                                'cart_item_id': cart_item_id
-                            })
-                    elif action == 'remove':
                         cart_item.delete()
+                        # Tính toán lại giỏ hàng sau khi xóa
+                        cart_items = CartItem.objects.filter(cart=cart)
+                        total = sum(item.product.price * item.quantity for item in cart_items)
+                        cart_count = sum(item.quantity for item in cart_items)
+                        
                         return JsonResponse({
                             'removed': True,
                             'product_id': product_id,
-                            'cart_item_id': cart_item_id
+                            'cart_item_id': cart_item_id,
+                            'total': total,
+                            'cart_count': cart_count
                         })
-                    
-                    cart_item.save()
-                    
-                    # Tính toán subtotal và total cho session cart
-                    sub_total = cart_item.quantity * cart_item.product.price
+                
+                elif action == 'remove':
+                    cart_item.delete()
+                    # Tính toán lại giỏ hàng sau khi xóa
                     cart_items = CartItem.objects.filter(cart=cart)
-                    total = sum(item.quantity * item.product.price for item in cart_items)
+                    total = sum(item.product.price * item.quantity for item in cart_items)
+                    cart_count = sum(item.quantity for item in cart_items)
                     
                     return JsonResponse({
-                        'status': 'success',
-                        'quantity': cart_item.quantity,
-                        'sub_total': sub_total,
+                        'removed': True,
+                        'product_id': product_id,
+                        'cart_item_id': cart_item_id,
                         'total': total,
-                        'cart_count': sum(item.quantity for item in cart_items)
+                        'cart_count': cart_count
                     })
-                    
-                except Cart.DoesNotExist:
-                    # Nếu không tìm thấy cart, tạo cart mới
-                    return JsonResponse({'status': 'error', 'message': 'Giỏ hàng không tồn tại'})
-                except CartItem.DoesNotExist:
-                    return JsonResponse({'status': 'error', 'message': 'Sản phẩm không tồn tại trong giỏ hàng'})
-                except Exception as e:
-                    # Bắt các lỗi khác và trả về thông báo lỗi
-                    return JsonResponse({'status': 'error', 'message': str(e)})
                 
-        return JsonResponse({'status': 'error', 'message': 'Dữ liệu không hợp lệ'})
+                else:
+                    return JsonResponse({'status': 'error', 'message': 'Thao tác không hợp lệ'})
+                
+                # Tính toán lại giỏ hàng
+                sub_total = cart_item.product.price * cart_item.quantity
+                cart_items = CartItem.objects.filter(cart=cart)
+                total = sum(item.product.price * item.quantity for item in cart_items)
+                cart_count = sum(item.quantity for item in cart_items)
+                
+                return JsonResponse({
+                    'status': 'success',
+                    'quantity': cart_item.quantity,
+                    'sub_total': sub_total,
+                    'total': total,
+                    'cart_count': cart_count
+                })
+            
+            except Cart.DoesNotExist:
+                return JsonResponse({'status': 'error', 'message': 'Giỏ hàng không tồn tại'})
     
-    return JsonResponse({'status': 'error', 'message': 'Phương thức không được hỗ trợ'})
+    except Product.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Không tìm thấy sản phẩm'})
+    
+    except CartItem.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Sản phẩm không tồn tại trong giỏ hàng'})
+    
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': f'Lỗi không xác định: {str(e)}'})
+    
+@require_POST
+def add_cart_ajax(request, product_id):
+    """Add product to cart via AJAX"""
+    try:
+        product = get_object_or_404(Product, id=product_id)
+        
+        # For logged in user
+        if request.user.is_authenticated:
+            cart_item, created = CartItem.objects.get_or_create(
+                product=product,
+                user=request.user,
+                defaults={'quantity': 1}
+            )
+            
+            if not created:
+                cart_item.quantity += 1
+                cart_item.save()
+                
+            # Calculate cart count
+            cart_items = CartItem.objects.filter(user=request.user)
+            cart_count = sum(item.quantity for item in cart_items)
+            
+        else:
+            # For non-logged in user (session based)
+            cart = Cart.objects.get_or_create(cart_id=_cart_id(request))[0]
+            
+            cart_item, created = CartItem.objects.get_or_create(
+                product=product,
+                cart=cart,
+                defaults={'quantity': 1}
+            )
+            
+            if not created:
+                cart_item.quantity += 1
+                cart_item.save()
+                
+            # Calculate cart count
+            cart_items = CartItem.objects.filter(cart=cart)
+            cart_count = sum(item.quantity for item in cart_items)
+        
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Sản phẩm đã được thêm vào giỏ hàng',
+            'cart_count': cart_count
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        })
