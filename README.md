@@ -7,19 +7,82 @@ Book Store là một dự án web thương mại điện tử chuyên về bán 
     Database: MySQL
     Thanh toán: Stripe API
     Xác thực: Django Authentication System
-
-📁 Cấu trúc dự án
+<pre>
 Book-Store-New/
-    ├── accounts/       # Quản lý người dùng: đăng nhập, đăng ký, thông tin cá nhân
-    ├── carts/          # Giỏ hàng: thêm, xóa, cập nhật sản phẩm
-    ├── category/       # Quản lý danh mục sách
-    ├── greatkart/      # Cấu hình chính của dự án Django
-    ├── media/          # Lưu trữ hình ảnh sản phẩm
-    ├── orders/         # Xử lý đơn hàng và thanh toán
-    ├── static/         # CSS, JavaScript, hình ảnh tĩnh
-    ├── store/          # Quản lý sản phẩm và giao diện cửa hàng
-    └── templates/      # Các template HTML
-
+│
+├── accounts/                  # Quản lý người dùng
+│   ├── migrations/            # Migration files cho database
+│   ├── __init__.py
+│   ├── admin.py               # Cấu hình Django admin cho tài khoản
+│   ├── apps.py                # Cấu hình app
+│   ├── forms.py               # Form đăng ký, đăng nhập, thay đổi thông tin
+│   ├── models.py              # Model Account và các model liên quan
+│   ├── tests.py               # Unit tests cho accounts
+│   ├── urls.py                # URL routing cho chức năng người dùng
+│   └── views.py               # Logic xử lý đăng nhập, đăng ký, dashboard
+│
+├── carts/                     # Quản lý giỏ hàng
+│   ├── migrations/
+│   ├── __init__.py
+│   ├── admin.py               # Cấu hình admin cho giỏ hàng
+│   ├── models.py              # Models Cart, CartItem
+│   ├── urls.py                # URLs cho các chức năng giỏ hàng
+│   └── views.py               # Xử lý thêm/xóa/sửa sản phẩm trong giỏ hàng
+│
+├── category/                  # Quản lý danh mục sách
+│   ├── migrations/
+│   ├── __init__.py
+│   ├── admin.py               # Cấu hình admin cho danh mục sách
+│   ├── models.py              # Model Category và các quan hệ
+│   └── context_processors.py  # Menu danh mục toàn cục
+│
+├── greatkart/                 # Cấu hình chính của dự án
+│   ├── __init__.py
+│   ├── asgi.py                # Cấu hình ASGI
+│   ├── settings.py            # Cài đặt dự án (database, apps, middleware...)
+│   ├── urls.py                # URL routing tổng thể
+│   └── wsgi.py                # Cấu hình WSGI
+│
+├── media/                     # Lưu trữ hình ảnh sản phẩm
+│   └── photos/                # Thư mục chứa ảnh upload
+│
+├── orders/                    # Xử lý đơn hàng và thanh toán
+│   ├── migrations/
+│   ├── __init__.py
+│   ├── admin.py               # Cấu hình admin cho đơn hàng
+│   ├── forms.py               # Form thanh toán và đặt hàng
+│   ├── models.py              # Models Order, OrderProduct, Payment
+│   ├── urls.py                # URL cho quy trình thanh toán
+│   └── views.py               # Xử lý đặt hàng, thanh toán và Stripe integration
+│
+├── static/                    # Tài nguyên tĩnh
+│   ├── css/                   # Stylesheets (Bootstrap, custom CSS)
+│   ├── js/                    # JavaScript files
+│   └── images/                # Hình ảnh tĩnh (logo, banner, icons)
+│
+├── store/                     # Quản lý sản phẩm và giao diện cửa hàng
+│   ├── migrations/
+│   ├── __init__.py
+│   ├── admin.py               # Cấu hình admin cho sản phẩm
+│   ├── models.py              # Models Product, Variation, ReviewRating
+│   ├── urls.py                # URLs cho hiển thị sản phẩm
+│   └── views.py               # Logic hiển thị, tìm kiếm, lọc sản phẩm
+│
+├── templates/                 # Templates HTML
+│   ├── accounts/              # Templates tài khoản (login, register, dashboard)
+│   ├── admin/                 # Templates custom cho Django admin
+│   ├── carts/                 # Templates giỏ hàng
+│   ├── includes/              # Các thành phần tái sử dụng (navbar, footer)
+│   ├── orders/                # Templates checkout, thanh toán
+│   ├── store/                 # Templates hiển thị sản phẩm, chi tiết
+│   └── base.html              # Template cơ sở cho toàn bộ website
+│
+├── .env                       # Biến môi trường (API keys, secrets)
+├── .gitignore                 # Cấu hình Git ignore
+├── manage.py                  # Script quản lý Django
+├── README.md                  # Tài liệu dự án
+└── requirements.txt           # Danh sách dependencies
+<pre>
 ✨ Các chức năng chính
 1. 👤 Quản lý người dùng
     Đăng ký, đăng nhập, đăng xuất
