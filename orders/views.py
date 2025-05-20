@@ -24,21 +24,23 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 
 @csrf_exempt
 def create_checkout_session(request, order_number):
-    # Obtener la orden que queremos pagar
     try:
         order = Order.objects.get(order_number=order_number, is_ordered=False)
         cart_items = CartItem.objects.filter(user=request.user)
         
-        # Obtener el dominio para las URLs de redirección
+        # Lưu thông tin đơn hàng vào session
+        request.session['pending_order_number'] = order_number
+        request.session['pending_order_id'] = order.id
+        
         YOUR_DOMAIN = f"{request.scheme}://{request.get_host()}"
         
-        # Crear los items para la sesión de Stripe
+        # Tạo các items cho phiên thanh toán Stripe
         line_items = []
         for item in cart_items:
             line_items.append({
                 'price_data': {
                     'currency': 'vnd',
-                    'unit_amount': int(item.product.price),  # Stripe necesita el precio en centavos
+                    'unit_amount': int(item.product.price),
                     'product_data': {
                         'name': item.product.product_name,
                         'description': item.product.description[:100] if hasattr(item.product, 'description') else '',
@@ -48,12 +50,12 @@ def create_checkout_session(request, order_number):
                 'quantity': item.quantity,
             })
         
-        # Crear la sesión de checkout
+        # Tạo phiên thanh toán với URL thành công chứa payment_intent
         checkout_session = stripe.checkout.Session.create(
             payment_method_types=['card'],
             line_items=line_items,
             mode='payment',
-            success_url=f'{YOUR_DOMAIN}/orders/success?order_number={order.order_number}&session_id={{CHECKOUT_SESSION_ID}}',
+            success_url=f'{YOUR_DOMAIN}/orders/success?session_id={{CHECKOUT_SESSION_ID}}',
             cancel_url=f'{YOUR_DOMAIN}/orders/cancel?order_number={order.order_number}',
             metadata={
                 'order_number': order.order_number,
@@ -61,10 +63,98 @@ def create_checkout_session(request, order_number):
             }
         )
         
+        # Lưu thông tin phiên thanh toán để sử dụng sau này
+        request.session['checkout_session_id'] = checkout_session.id
+        
         return JsonResponse({'id': checkout_session.id, 'url': checkout_session.url})
         
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
+
+
+def payment_success(request):
+    # Lấy session_id từ URL query parameters
+    session_id = request.GET.get('session_id')
+    
+    try:
+        if not session_id:
+            raise Exception('Không tìm thấy session_id trong URL')
+            
+        # Lấy thông tin phiên thanh toán từ Stripe
+        checkout_session = stripe.checkout.Session.retrieve(session_id)
+        
+        # Lấy thông tin đơn hàng từ session
+        order_number = request.session.get('pending_order_number')
+        
+        if not order_number:
+            order_number = checkout_session.metadata.get('order_number')
+            
+        # Lấy đơn hàng từ database
+        order = Order.objects.get(order_number=order_number, user=request.user)
+        
+        # Tạo bản ghi thanh toán mới
+        payment = Payment(
+            user=request.user,
+            payment_id=checkout_session.payment_intent,
+            payment_method='Stripe',
+            amount_paid=order.order_total,
+            status='COMPLETED'
+        )
+        payment.save()
+        
+        # Lưu thông tin payment_id vào session để sử dụng ở trang success
+        request.session['order_id'] = order.id
+        request.session['payment_id'] = payment.id
+        
+        # Cập nhật trạng thái đơn hàng
+        order.payment = payment
+        order.is_ordered = True
+        order.status = 'Completed'
+        order.save()
+        
+        # Cập nhật sản phẩm đã đặt
+        cart_items = CartItem.objects.filter(user=request.user)
+        for item in cart_items:
+            orderproduct = OrderProduct()
+            orderproduct.order_id = order.id
+            orderproduct.payment = payment
+            orderproduct.user_id = request.user.id
+            orderproduct.product_id = item.product_id
+            orderproduct.quantity = item.quantity
+            orderproduct.product_price = item.product.price
+            orderproduct.ordered = True
+            orderproduct.save()
+            
+            # Cập nhật số lượng sản phẩm
+            product = Product.objects.get(id=item.product_id)
+            product.stock -= item.quantity
+            product.save()
+        
+        # Xóa giỏ hàng
+        CartItem.objects.filter(user=request.user).delete()
+        
+        # Hiển thị trang thành công với thông tin đơn hàng
+        ordered_products = OrderProduct.objects.filter(order=order)
+        context = {
+            'order': order,
+            'payment': payment,
+            'ordered_products': ordered_products,
+        }
+        
+        # Xóa session data
+        if 'pending_order_number' in request.session:
+            del request.session['pending_order_number']
+        if 'pending_order_id' in request.session:
+            del request.session['pending_order_id']
+        if 'checkout_session_id' in request.session:
+            del request.session['checkout_session_id']
+            
+        return render(request, 'orders/success.html', context)
+        
+    except Exception as e:
+        print(f"Lỗi trong payment_success: {str(e)}")
+        messages.error(request, f'Đã xảy ra lỗi khi xử lý thanh toán: {str(e)}')
+        return redirect('cart')
 
 
 def payments(request):
@@ -186,39 +276,50 @@ def place_order(request, total=0, quantity=0,):
     else:
         return redirect('checkout')
 
-def payment_success(request):
-    # Lấy thông tin từ session
-    order_id = request.session.get('order_id')
-    payment_id = request.session.get('payment_id')
+# def payment_success(request):
+#     # Lấy thông tin từ session
+#     order_id = request.session.get('order_id')
+#     payment_id = request.session.get('payment_id')
     
-    try:
-        order = Order.objects.get(id=order_id, user=request.user, is_ordered=True)
-        payment = Payment.objects.get(payment_id=payment_id)
-        ordered_products = OrderProduct.objects.filter(order=order)
+#     try:
+#         order = Order.objects.get(id=order_id, user=request.user)
+#         # Cập nhật trạng thái đơn hàng ngay tại đây
+#         order.status = 'Completed'
+#         order.is_ordered = True
+#         order.save()
         
-        # Cập nhật trạng thái đơn hàng
-        order.status = 'Completed'
-        order.save()
+#         payment = Payment.objects.get(payment_id=payment_id)
+#         # Cập nhật trạng thái thanh toán
+#         payment.status = 'COMPLETED'
+#         payment.save()
         
-        # Cập nhật trạng thái thanh toán
-        payment.status = 'COMPLETED'
-        payment.save()
+#         # Cập nhật số lượng sản phẩm trong kho
+#         ordered_products = OrderProduct.objects.filter(order=order)
+#         for item in ordered_products:
+#             product = Product.objects.get(id=item.product.id)
+#             product.stock -= item.quantity
+#             product.save()
         
-        context = {
-            'order': order,
-            'payment': payment,
-            'ordered_products': ordered_products,
-        }
+#         # Xóa giỏ hàng sau khi thanh toán thành công
+#         CartItem.objects.filter(user=request.user).delete()
         
-        # Xóa session khi đã hiển thị thành công
-        if 'order_id' in request.session:
-            del request.session['order_id']
-        if 'payment_id' in request.session:
-            del request.session['payment_id']
+#         ordered_products = OrderProduct.objects.filter(order=order)
+#         context = {
+#             'order': order,
+#             'payment': payment,
+#             'ordered_products': ordered_products,
+#         }
+        
+#         # Xóa session khi đã hiển thị thành công
+#         if 'order_id' in request.session:
+#             del request.session['order_id']
+#         if 'payment_id' in request.session:
+#             del request.session['payment_id']
             
-        return render(request, 'orders/success.html', context)
-    except (Order.DoesNotExist, Payment.DoesNotExist):
-        return redirect('home')
+#         return render(request, 'orders/success.html', context)
+    
+#     except (Order.DoesNotExist, Payment.DoesNotExist):
+#         return redirect('home')
 
 def payment_cancel(request):
     order_number = request.GET.get('order_number')
